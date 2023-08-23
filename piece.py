@@ -13,7 +13,7 @@ class Piece:
         pos (List[int]): A 2-element list of [row, col]
         piece_type (str): String representation of piece by FEN 
     """
-    self.color = color
+    self.color = color 
     self.pos = pos
     self.piece_type = None
 
@@ -148,7 +148,6 @@ class King(Piece):
         legal_moves.add(possible_pos)
 
 class Knight(Piece):
-
   MOVE_OFFSETS = [(1, 2), (1, -2), (-1, 2), (-1, -2),
                   (2, 1), (2, -1), (-2, 1), (-2, -1)]
 
@@ -180,6 +179,59 @@ class Pawn(Piece):
     super().__init__(color, pos)
     self.piece_type = "P" if self.color == "W" else "p"
 
+  def get_legal_moves(self, board):
+    legal_moves = set()
+    vertical_direction = -1 if self.get_color() == "W" else 1
+    curr_pos = self.get_pos()
+
+    # One forward
+    forward_move = [curr_pos[0] + vertical_direction, curr_pos[1]]
+    if board.is_valid_location(forward_move) and board.is_cell_empty(forward_move):
+      legal_moves.add(forward_move)
+
+    # Capture moves (diagonal)
+    diagonal_moves = [
+        [curr_pos[0] + vertical_direction, curr_pos[1] - 1],
+        [curr_pos[0] + vertical_direction, curr_pos[1] + 1]
+    ]
+
+    for move in diagonal_moves:
+      if board.is_valid_location(move):
+        piece_at_cell = board.get_cell_piece(move)
+        if piece_at_cell and piece_at_cell.get_color() != self.get_color():
+          legal_moves.add(move)
+
+    return legal_moves
+
+  def promote(self):
+    print("What piece would you like to promote to:\n1. Queen\n2. Knight\n3. Rook\n4. Bishop")
+    promotion_choice = input("Input the number of your choice: ")
+
+    try:
+      promotion_choice = int(promotion_choice)
+
+      if not 1 <= promotion_choice <= 4:
+        print("Invalid choice. Try again.")
+        return
+
+      if promotion_choice == 1:
+        new_piece_type = "Q" if self.get_color() == "W" else "q"
+      elif promotion_choice == 2:
+        new_piece_type = "N" if self.get_color() == "W" else "n"
+      elif promotion_choice == 3:
+        new_piece_type = "R" if self.get_color() == "W" else "r"
+      elif promotion_choice == 4:
+        new_piece_type = "B" if self.get_color() == "W" else "b"
+
+      self.change_piece_type(new_piece_type)
+      print(f"Piece promoted to {new_piece_type}")
+
+    except ValueError:
+      print("Invalid input. Must be a number between 1 and 4.")
+
+    def change_piece_type(self, new_piece_type):
+      self.piece_type = new_piece_type
+
 
 class Sliding_Piece(Piece):
   def __init__(self, color, pos):
@@ -196,11 +248,14 @@ class Sliding_Piece(Piece):
         piece_at_cell = board.get_cell_piece(possible_pos)
         if piece_at_cell == None:
           legal_moves.add(possible_pos)
+          possible_pos[0] += offset[0]
+          possible_pos[1] += offset[1]
         elif piece_at_cell.get_color() != self.get_color():
           legal_moves.add(possible_pos)
           break
         else:
           break
+
     return legal_moves
 
 
