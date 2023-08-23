@@ -51,6 +51,79 @@ class King(Piece):
   def __init__(self, color, pos):
     super().__init__(color, pos)
     self.piece_type = "K" if self.color == "W" else "k"
+
+  def checks_and_pins(self, board):
+    """Returns all checks and pins for a king in a given board position
+
+    Args:
+        board (Board): Board Object
+
+    Raises:
+        ValueError: Raises ValueError if there are more than two checks at any given time
+
+    Return:
+        List: Returns a list that contains a list of checks and a list of pins
+    """
+    curr_pos = self.get_pos()
+    checks = []
+    pins = []
+    for offset in King.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+
+      while board.is_valid_location(possible_pos):
+        shields = []
+        piece_at_cell = board.get_cell_piece(possible_pos)
+        if piece_at_cell == None:
+          possible_pos[0] += offset[0]
+          possible_pos[1] += offset[1]
+
+        elif piece_at_cell.get_color == self.get_color():
+          shields.append(piece_at_cell)
+
+          if len(shields) > 1:
+            break
+          else:
+            possible_pos[0] += 1
+
+        elif (offset[0] * offset[1] == 0) and (piece_at_cell is Rook or piece_at_cell is Queen):
+          if len(shields) == 1:
+            pins.append(shields[0])
+          else:
+            checks.append(piece_at_cell)
+          
+          break
+
+        elif (offset[0] * offset[1] != 0) and (piece_at_cell is Bishop or piece_at_cell is Queen):
+          if len(shields) == 1:
+            pins.append(shields[0])
+          else:
+            checks.append(piece_at_cell)
+          
+          break
+    
+    for offset in Knight.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+
+      if not board.is_valid_location(possible_pos):
+        continue
+      elif board.get_cell_piece(possible_pos) is Knight:
+        check += 1
+        break
+    
+    if checks > 2:
+      raise ValueError
+    else:
+      return[checks, pins]
+      
+
+
+
+
+          
+      
+
+
+    
   
   def get_legal_moves(self, board, opposite_pieces):
     """_summary_
@@ -82,6 +155,8 @@ class Knight(Piece):
   def __init__(self, color, pos):
     super().__init__(color, pos)
     self.piece_type = "N" if self.color == "W" else "n"
+
+  def is_pinned(self, )
 
   def get_legal_moves(self, board):
     curr_pos = self.get_pos()
@@ -130,7 +205,7 @@ class Sliding_Piece(Piece):
 
 
 class Queen(Sliding_Piece):
-  MOVE_OFFSETS = [(1, 0), (0, 1), (-1, 0), (0, -1),
+  MOVE_OFFSETS = [(), 1, 0(0, 1), (-1, 0), (0, -1),
                   (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
   def __init__(self, color, pos):
