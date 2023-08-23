@@ -47,10 +47,32 @@ class Piece:
 
 
 class King(Piece):
+  MOVE_OFFSETS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
   def __init__(self, color, pos):
     super().__init__(color, pos)
     self.piece_type = "K" if self.color == "W" else "k"
+  
+  def get_legal_moves(self, board, opposite_pieces):
+    """_summary_
 
+    Args:
+        board (_type_): _description_
+        opposite_pieces (List[Piece]): _description_
+    """
+    curr_pos = self.pos
+    legal_moves = set()
+
+    for offset in King.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+
+      if not board.is_valid_location(possible_pos):
+        continue
+      elif board.get_cell_piece(possible_pos).get_color() == self.get_color():
+        continue
+      elif any(possible_pos in p.get_legal_moves for p in opposite_pieces):
+        continue
+      else:
+        legal_moves.add(possible_pos)
 
 class Knight(Piece):
   MOVE_OFFSETS = [(1, 2), (1, -2), (-1, 2), (-1, -2),
