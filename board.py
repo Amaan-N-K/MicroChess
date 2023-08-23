@@ -2,12 +2,44 @@ from piece import *
 
 ROW_COUNT = 5
 COL_COUNT = 4
+STARTING_FEN = "knbr/p3/4/3P/RBNK"
+PIECE_DICT = {
+    "p": ["B", Pawn],
+    "r": ["B", Rook],
+    "n": ["B", Knight],
+    "b": ["B", Bishop],
+    "q": ["B", Queen],
+    "k": ["B", King],
+    "P": ["W", Pawn],
+    "R": ["W", Rook],
+    "N": ["W", Knight],
+    "B": ["W", Bishop],
+    "Q": ["W", Queen],
+    "K": ["W", King],
+}
 
 
 class Board:
   def __init__(self):
     self.board = [[None for _ in range(COL_COUNT)] for _ in range(ROW_COUNT)]
-    self.pieces = set()
+    self.pieces = []
+
+  def _starting_position(self):
+    """Place starting position's chess pieces on board
+    """
+    rows = STARTING_FEN.split('/')
+    for row_idx, row in enumerate(rows):
+      col_idx = 0
+      for c in row:
+        if c.isdigit():
+          col_idx += int(c)
+        else:
+          piece_info = PIECE_DICT.get(c, None)
+          piece_color = piece_info[0]
+          piece_class = piece_info[1]
+          piece = piece_class(piece_color, [row_idx, col_idx])
+          self._place_piece(piece, [row_idx, col_idx])
+          col_idx += 1
 
   def is_valid_location(self, pos):
     """Returns whether a list is a valid board location
@@ -67,7 +99,9 @@ class Board:
     if not self.is_valid_location(pos):
       raise ValueError(f"Invalid cell location: {pos}")
     self.board[pos[0], pos[1]] = piece
-    self.pieces.add(piece)
+    if piece in self.pieces:
+      raise ValueError("This piece is being counted twice in self.pieces")
+    self.pieces.append(piece)
     piece.set_pos(pos)
 
   def _remove_from_cell(self, pos):
@@ -98,6 +132,14 @@ class Board:
     """
     piece_pos = piece.get_pos()
     self._remove_from_cell(piece_pos)
+
+  def get_all_pieces(self):
+    """Returns a list of all pieces on board
+
+    Returns:
+        List[Piece]: Chess piece
+    """
+    return self.pieces
 
   def move_piece(self, piece, pos):
     """Given a piece and a new pos, move the piece to the new pos and clear the old pos
