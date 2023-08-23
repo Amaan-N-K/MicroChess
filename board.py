@@ -7,6 +7,7 @@ COL_COUNT = 4
 class Board:
   def __init__(self):
     self.board = [[None for _ in range(COL_COUNT)] for _ in range(ROW_COUNT)]
+    self.pieces = set()
 
   def is_valid_location(self, pos):
     """Returns whether a list is a valid board location
@@ -66,6 +67,7 @@ class Board:
     if not self.is_valid_location(pos):
       raise ValueError(f"Invalid cell location: {pos}")
     self.board[pos[0], pos[1]] = piece
+    self.pieces.add(piece)
     piece.set_pos(pos)
 
   def _remove_from_cell(self, pos):
@@ -83,8 +85,9 @@ class Board:
     piece = self.board[pos[0], pos[1]]
     if not piece:
       raise ValueError(f"No piece to remove at location: {pos}")
-    piece.remove_pos()
     self.board[pos[0], pos[1]] = None
+    self.pieces.remove(piece)
+    piece.remove_pos()
     return piece
 
   def _remove_piece(self, piece):
