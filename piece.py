@@ -10,7 +10,7 @@ class Piece:
 
     Args:
         color (str): 'B' or 'W' for black and white
-        pos (List[int]): A 2-element list of [row, col]
+        pos (List[int]): A 2-element list of [row, col], or None if not on game board
         piece_type (str): String representation of piece by FEN 
     """
     self.color = color
