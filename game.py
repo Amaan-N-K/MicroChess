@@ -9,10 +9,15 @@ class Game:
     self.board = Board()
     self.p1 = p1
     self.p2 = p2
+    self.moves = []
+    self.half_move_count = 0
+    self.full_move_count = 0
   
   def apply_move(self, curr_pos, new_pos):
-    self.board.get_cell_piece(curr_pos)
-    self.board.move_piece(curr_pos, new_pos)    
+    piece = self.board.get_cell_piece(curr_pos)
+    piece_at_new_pos = self.board.get_cell_piece(new_pos)
+    self.board.move_piece(piece, new_pos)   
+    return 1 if not piece_at_new_pos or piece is Pawn else 0 
   
   def is_game_over(self):
     
@@ -21,10 +26,49 @@ class Game:
     while not self.is_game_over():
       for player in [self.p1, self.p2]:
         curr_pos, new_pos = player.get_move(self.board)
-        self.apply_move(curr_pos, new_pos)
+        move_type = self.apply_move(curr_pos, new_pos)
+        if move_type == 0: self.half_move_count += 1
+        else: self.half_move_count = 0
         if self.is_game_over(): 
           break
+      
+      self.full_move_count += 1
+  
+  def promote(self, pawn):
+    """Takes agent input on what piece to promote the pawn to
 
+    Args:
+        pawn (Piece): The chess piece pawn that is to be promoted
+    """
+    pawn_color = pawn.get_color()
+    pawn_pos = pawn.get_pos()
+    
+    print("What piece would you like to promote to:\n1. Queen\n2. Knight\n3. Rook\n4. Bishop")
+    promotion_choice = input("Input the number of your choice: ")
+
+    try:
+      promotion_choice = int(promotion_choice)
+
+      if not 1 <= promotion_choice <= 4:
+        print("Invalid choice. Try again.")
+        return
+
+      self.board._remove_piece(pawn)
+      if promotion_choice == 1:
+        new_piece = Queen(pawn_color, pawn_pos)
+      elif promotion_choice == 2:
+        new_piece = Knight(pawn_color, pawn_pos)
+      elif promotion_choice == 3:
+        new_piece = Rook(pawn_color, pawn_pos)
+      elif promotion_choice == 4:
+        new_piece = Bishop(pawn_color, pawn_pos)
+      
+      self.board._place_piece(new_piece, new_piece.get_pos())
+
+      print(f"Piece promoted to {str(new_piece)}")
+
+    except ValueError:
+      print("Invalid input. Must be a number between 1 and 4.")
 
 class Agent:
   def __init__(self, board: Board, color):
@@ -34,13 +78,41 @@ class Agent:
   def make_move(self):
     raise NotImplementedError("This method must be ovverided by child classes")
 
-
 class Random_Agent(Agent):
   def __init__(self, board: Board, color):
-    super().__init__()
+    super().__init__(board, color)
 
   def make_move(self):
     my_piece = choice(list(filter(lambda x: x.get_color() ==
                                   self.color, self.board.get_all_pieces())))
     my_move = choice(my_piece.get_legal_moves())
     self.board.move_piece(my_piece, my_move)
+
+class Human_Agent(Agent):
+  def __init__(self, board: Board, color):
+    super().__init__(board, color)
+  
+  def make_move(self):
+    self.board.print_board()
+    print("###################################")
+    while True:
+      try: 
+        curr_pos = input("Enter the [row col] of the piece to move").strip(" ")
+        curr_pos[0] = int(curr_pos[0])
+        curr_pos[1] = int(curr_pos[1])
+
+        piece = self.board.get_cell_piece(curr_pos)
+        piece_legal_moves = piece.get_legal_moves(self.board)
+
+        new_pos = input("Enter the [row col] to move the piece").strip(" ")
+        new_pos[0] = int(new_pos[0])
+        new_pos[1] = int(new_pos[1])
+
+        if new_pos not in piece_legal_moves:
+          print("Invalid choice -- try again")
+        
+        return [curr_pos, new_pos]
+
+      except: 
+        print("Invalid choice -- try again")
+      

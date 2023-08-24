@@ -100,7 +100,15 @@ class Board:
     """
     if not self.is_valid_location(pos):
       raise ValueError(f"Invalid board location: {pos}")
-    self.board[pos[0], pos[1]] = piece
+
+    piece_at_pos = self.get_cell_piece(pos)
+    if piece_at_pos == None:
+      self.board[pos[0], pos[1]] = piece
+    elif piece_at_pos.get_color() != piece.get_color():
+      self._remove_piece(piece_at_pos)
+      self.board[pos[0], pos[1]] = piece
+    else:
+      raise ValueError(f"Cannot move piece to same color occupied cell")
     if piece in self.pieces:
       raise ValueError("This piece is being counted twice in self.pieces")
     self.pieces.append(piece)
@@ -142,7 +150,7 @@ class Board:
         List[Piece]: Chess piece
     """
     return self.pieces
-  
+
   def get_all_pieces_by_color(self, color):
     return list(filter(lambda x: x.get_color() == color, self.get_all_pieces()))
 

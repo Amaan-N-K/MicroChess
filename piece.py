@@ -336,36 +336,6 @@ class Pawn(Piece):
     else:
       return self.possible_legal_moves()
 
-  def promote(self):
-    print("What piece would you like to promote to:\n1. Queen\n2. Knight\n3. Rook\n4. Bishop")
-    promotion_choice = input("Input the number of your choice: ")
-
-    try:
-      promotion_choice = int(promotion_choice)
-
-      if not 1 <= promotion_choice <= 4:
-        print("Invalid choice. Try again.")
-        return
-
-      if promotion_choice == 1:
-        new_piece_type = "Q" if self.get_color() == "W" else "q"
-      elif promotion_choice == 2:
-        new_piece_type = "N" if self.get_color() == "W" else "n"
-      elif promotion_choice == 3:
-        new_piece_type = "R" if self.get_color() == "W" else "r"
-      elif promotion_choice == 4:
-        new_piece_type = "B" if self.get_color() == "W" else "b"
-
-      self.change_piece_type(new_piece_type)
-      print(f"Piece promoted to {new_piece_type}")
-
-    except ValueError:
-      print("Invalid input. Must be a number between 1 and 4.")
-
-    def change_piece_type(self, new_piece_type):
-      self.piece_type = new_piece_type
-
-
 class Sliding_Piece(Piece):
   def __init__(self, color, pos):
     super().__init__(color, pos)
