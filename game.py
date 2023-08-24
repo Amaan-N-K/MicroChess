@@ -50,7 +50,8 @@ class Game:
         if move_type == 0: self.half_move_count += 1
         else: self.half_move_count = 0
 
-        state = self.is_game_over(player.color):        if state is int:  
+        state = self.is_game_over(player.color):        
+        if state is int:  
           game_over = True
           break
       
