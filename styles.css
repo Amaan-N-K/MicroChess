@@ -64,10 +64,67 @@ a:active {
   height: 100px;
 }
 
+.cell:hover {
+  filter: brightness(80%);
+}
+
 .light {
   background-color: var(--white-cell);
 }
 
 .dark {
   background-color: var(--black-cell);
+}
+
+.chess-piece {
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.bishop-b {
+  background-image: url("./images/pieces-svg/bishop-b.svg");
+}
+
+.knight-b {
+  background-image: url("./images/pieces-svg/knight-b.svg");
+}
+
+.rook-b {
+  background-image: url("./images/pieces-svg/rook-b.svg");
+}
+
+.queen-b {
+  background-image: url("./images/pieces-svg/queen-b.svg");
+}
+
+.king-b {
+  background-image: url("./images/pieces-svg/king-b.svg");
+}
+
+.pawn-b {
+  background-image: url("./images/pieces-svg/pawn-b.svg");
+}
+
+.bishop-w {
+  background-image: url("./images/pieces-svg/bishop-w.svg");
+}
+
+.knight-w {
+  background-image: url("./images/pieces-svg/knight-w.svg");
+}
+
+.rook-w {
+  background-image: url("./images/pieces-svg/rook-w.svg");
+}
+
+.queen-w {
+  background-image: url("./images/pieces-svg/queen-w.svg");
+}
+
+.king-w {
+  background-image: url("./images/pieces-svg/king-w.svg");
+}
+
+.pawn-w {
+  background-image: url("./images/pieces-svg/pawn-w.svg");
 }
