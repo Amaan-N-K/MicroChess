@@ -10,7 +10,7 @@ class Piece:
     """Initialize piece 
 
     Args:
-        color (str): 'B' or 'W' for black and white
+        color (str): "B" or "W" for black and white
         pos (List[int]): A 2-element list of [row, col], or None if not on game board
         piece_type (str): String representation of piece by FEN 
     """
@@ -36,8 +36,12 @@ class Piece:
     return self.color
 
   def _check_line(self, king_pos: List, checker_pos: List):
-    vector = [(checker_pos[0] - king_pos[0]), (checker_pos[1], king_pos[1])]
-    vector_direction = [vector[0]/abs(vector[0]), vector[1]/abs(vector[1])]
+    vector = [checker_pos[0] - king_pos[0], checker_pos[1] - king_pos[1]]
+    vector_direction = [0, 0]
+    if vector[0] != 0:
+      vector_direction[0] = (vector[0]/abs(vector[0]))
+    if vector[1] != 0:
+      vector_direction[1] = (vector[1]/abs(vector[1]))
 
     check_line = set()
 
@@ -71,10 +75,6 @@ class King(Piece):
     super().__init__(color, pos)
     self.piece_type = "K" if self.get_color() == "W" else "k"
 
-  def legal_moves_in_check(self, checks: List[Piece], board: Board):
-    if len(checks) == 2:
-      moves = self.get_legal_moves(board)
-
   def checks_and_pins(self, board: Board):
     """Returns all checks and pins for a king in a given board position
 
@@ -91,25 +91,27 @@ class King(Piece):
     checks = []
     pins = {}
 
-    # Checking for pin and checks by sliding pieces
+    # Checking for checks and pins by sliding pieces
     for offset in King.MOVE_OFFSETS:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
 
       while board.is_valid_location(possible_pos):
         shields = {}
         piece_at_cell = board.get_cell_piece(possible_pos)
+
         if piece_at_cell == None:
           possible_pos[0] += offset[0]
           possible_pos[1] += offset[1]
 
+        # If king's teammate is blocking him
         elif piece_at_cell.get_color == self.get_color():
 
           if offset[0] == 0:
-            shields[piece_at_cell] = ['v']
+            shields[piece_at_cell] = "v"
           elif offset[1] == 0:
-            shields[piece_at_cell] = ['h']
+            shields[piece_at_cell] = "h"
           else:
-            shields[piece_at_cell] = ['d']
+            shields[piece_at_cell] = "d"
 
           if len(shields) > 1:
             break
@@ -120,7 +122,7 @@ class King(Piece):
         # Checking for horizontal/vertical (ex. (1 * 0) => 0)) and not same color
         elif (offset[0] * offset[1] == 0) and (piece_at_cell is Rook or piece_at_cell is Queen):
           if len(shields) == 1:
-            pins.append(shields[0])
+            pins = shields
           else:
             checks.append(piece_at_cell)
 
@@ -135,6 +137,7 @@ class King(Piece):
 
           break
 
+        # When enemy bishop is on horizontal/vertical line or rook on diagonal
         else:
           break
 
@@ -147,6 +150,7 @@ class King(Piece):
       if board.get_cell_piece(possible_pos) is Knight:
         checks.append(board.get_cell_piece(possible_pos))
 
+    # Checking for check by pawn
     vertical_direction = -1 if self.get_color() == "W" else 1
 
     # Capture moves (diagonal)
@@ -169,22 +173,17 @@ class King(Piece):
   def get_legal_moves(self, board: Board):
     curr_pos = self.get_pos()
     legal_moves = set()
-    opponenet_pieces = list(filter(lambda x: x.get_color()
-                                   != self.get_color(), board.get_all_pieces()))
+    opponent_color = "B" if self.get_color() == "W" else "W"
+    opponent_pieces = board.get_all_pieces_by_color(opponent_color)
 
     for offset in King.MOVE_OFFSETS:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
 
-      if not board.is_valid_location(possible_pos):
-        continue
-      elif board.is_cell_empty(possible_pos):
-        legal_moves.add(possible_pos)
-      elif board.get_cell_piece(possible_pos).get_color() == self.get_color():
-        continue
-      # Check if any opponent pieces can access this possible position
-      elif any(possible_pos in p.get_legal_moves for p in opponenet_pieces):
-        continue
-      else:
+      if (
+          board.is_valid_location(possible_pos)
+          and all(possible_pos not in p.get_legal_moves for p in opponent_pieces)
+          and board.get_cell_piece(possible_pos).get_color() != self.get_color()
+      ):
         legal_moves.add(possible_pos)
 
     return legal_moves
@@ -205,24 +204,23 @@ class Knight(Piece):
     for offset in Knight.MOVE_OFFSETS:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
 
-      if not board.is_valid_location(possible_pos):
-        continue
-      elif board.is_cell_empty(possible_pos) or board.get_cell_piece(possible_pos).get_color() != self.get_color():
+      if board.is_valid_location(possible_pos) and (
+          board.is_cell_empty(possible_pos)
+          or board.get_cell_piece(possible_pos).get_color() != self.get_color()
+      ):
         legal_moves.add(possible_pos)
-      else:
-        continue
 
     return legal_moves
 
   def get_legal_moves(self, board: Board):
     legal_moves = set()
-    pieces = board.get_all_pieces_by_color(self.get_color())
-    my_king = [piece for piece in pieces if piece is King][0]
+    my_pieces = board.get_all_pieces_by_color(self.get_color())
+    my_king = [piece for piece in my_pieces if piece is King][0]
     checks_and_pins = my_king.checks_and_pins(board)
     checks = checks_and_pins[0]
     pins = checks_and_pins[1]
 
-    if self in pins or len(checks) == 2:
+    if len(checks) == 2 or self in pins:
       return set()
     elif len(checks) == 1:
       possible_moves = self.possible_legal_moves(board)
@@ -249,7 +247,6 @@ class Pawn(Piece):
 
     legal_moves = set()
 
-   
     vertical_direction = -1 if self.get_color() == "W" else 1
     curr_pos = self.get_pos()
 
@@ -271,7 +268,7 @@ class Pawn(Piece):
           legal_moves.add(move)
 
     return legal_moves
-    
+
   def get_legal_moves(self, board: Board):
     pieces = board.get_all_pieces_by_color(self.get_color())
     my_king = [piece for piece in pieces if piece is King][0]
@@ -281,23 +278,25 @@ class Pawn(Piece):
 
     if len(checks) == 2:
       return set()
-    elif self in pins and len(checks) == 1:
+    elif len(checks) == 1 and self in pins:
       return set()
-    elif self in pins and pins[self] == 'v':
+    # A pawn can only move in a pin if the attacker is ahead of it vertically
+    elif self in pins and pins[self] == "v":
+
       possible_moves = self.possible_legal_moves(board)
-      direction = -1 if self.get_color() == 'W' else 1
-
-      move = [self.get_pos()[0] + direction, self.get_pos()[1]]
-
-      if move in possible_moves:
-        return {move}
+      direction = -1 if self.get_color() == "W" else 1
+      possible_pos = [self.get_pos()[0] + direction, self.get_pos()[1]]
+      if board.is_cell_empty(possible_moves):
+        return {possible_pos}
       else:
         return set()
+
     elif self in pins:
       return set()
+
     else:
       return self.possible_legal_moves()
-    
+
   def promote(self):
     print("What piece would you like to promote to:\n1. Queen\n2. Knight\n3. Rook\n4. Bishop")
     promotion_choice = input("Input the number of your choice: ")

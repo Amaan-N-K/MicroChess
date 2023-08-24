@@ -28,7 +28,7 @@ class Board:
   def _starting_position(self):
     """Place starting position's chess pieces on board
     """
-    rows = STARTING_FEN.split('/')
+    rows = STARTING_FEN.split("/")
 
     for row_idx, row in enumerate(rows):
       col_idx = 0
