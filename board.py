@@ -1,22 +1,36 @@
 from piece import *
+from piece import King
 
 ROW_COUNT = 5
 COL_COUNT = 4
 STARTING_FEN = "knbr/p3/4/3P/RBNK"
-PIECE_DICT = {
-    "p": ["B", Pawn],
-    "r": ["B", Rook],
-    "n": ["B", Knight],
-    "b": ["B", Bishop],
-    "q": ["B", Queen],
-    "k": ["B", King],
-    "P": ["W", Pawn],
-    "R": ["W", Rook],
-    "N": ["W", Knight],
-    "B": ["W", Bishop],
-    "Q": ["W", Queen],
-    "K": ["W", King],
-}
+
+
+def make_piece(piece_char, pos):
+  if piece_char == "p":
+    return Pawn("B", pos)
+  elif piece_char == "r":
+    return Rook("B", pos)
+  elif piece_char == "n":
+    return Knight("B", pos)
+  elif piece_char == "b":
+    return Bishop("B", pos)
+  elif piece_char == "q":
+    return Queen("B", pos)
+  elif piece_char == "k":
+    return King("B", pos)
+  elif piece_char == "P":
+    return Pawn("W", pos)
+  elif piece_char == "R":
+    return Rook("W", pos)
+  elif piece_char == "N":
+    return Knight("W", pos)
+  elif piece_char == "B":
+    return Bishop("W", pos)
+  elif piece_char == "Q":
+    return Queen("W", pos)
+  elif piece_char == "K":
+    return King("W", pos)
 
 
 class Board:
@@ -38,11 +52,7 @@ class Board:
         if c.isdigit():
           col_idx += int(c)
         else:
-          piece_info = PIECE_DICT.get(c, None)
-
-          piece_color = piece_info[0]
-          piece_class = piece_info[1]
-          piece = piece_class(piece_color, [row_idx, col_idx])
+          piece = make_piece(c, [row_idx, col_idx])
           if c == "K":
             self.w_king = piece
           if c == "k":
