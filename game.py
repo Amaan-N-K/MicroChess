@@ -1,6 +1,4 @@
 from random import choice
-
-from piece import *
 from board import *
 
 
@@ -21,7 +19,7 @@ class Game:
 
   def is_game_over(self, color):
     if color == "B":
-      self.board.w_king.checks_and_pins()
+      self.board.w_king.checks_and_pins(self.board)
       all_moves = set()
       for piece in self.board.get_all_pieces_by_color("W"):
         all_moves.update(piece.get_legal_moves(self.board))
@@ -30,7 +28,7 @@ class Game:
         elif len(all_moves) == 0:
           return 0
     else:
-      self.board.b_king.checks_and_pins()
+      self.board.b_king.checks_and_pins(self.board)
       all_moves = set()
       for piece in self.board.get_all_pieces_by_color("B"):
         all_moves.update(piece.get_legal_moves(self.board))
@@ -42,9 +40,10 @@ class Game:
   def play(self):
     state = "playing"
     game_over = False
+    self.board.w_king.checks_and_pins(self.board)
     while not game_over:
       for player in [self.p1, self.p2]:
-        curr_pos, new_pos = player.get_move(self.board)
+        curr_pos, new_pos = player.get_move()
         move_type = self.apply_move(curr_pos, new_pos)
         if move_type == 0:
           self.half_move_count += 1
@@ -107,7 +106,7 @@ class Agent:
     self.board = board
     self.color = color
 
-  def make_move(self):
+  def get_move(self):
     raise NotImplementedError("This method must be ovverided by child classes")
 
 
@@ -115,7 +114,7 @@ class Random_Agent(Agent):
   def __init__(self, board: Board, color):
     super().__init__(board, color)
 
-  def make_move(self):
+  def get_move(self):
     my_piece = choice(list(filter(lambda x: x.get_color() ==
                                   self.color, self.board.get_all_pieces())))
     my_move = choice(my_piece.get_legal_moves())
@@ -126,23 +125,27 @@ class Human_Agent(Agent):
   def __init__(self, board: Board, color):
     super().__init__(board, color)
 
-  def make_move(self):
+  def get_move(self):
     count = 0
     self.board.print_board()
     print("###################################")
     while True:
+      print('recursion')
       try:
         curr_pos = input("Enter the [row col] of the piece to move").split(" ")
         curr_pos[0] = int(curr_pos[0])
         curr_pos[1] = int(curr_pos[1])
 
         piece = self.board.get_cell_piece(curr_pos)
-
+        piece_legal_moves = piece.get_legal_moves(self.board)
+        if piece.get_color() != self.color:
+          print(f"You can not move the other colors pieces")
+          continue
+        print(f"You chose to move: {str(piece)}")
+        print(f"It can move to locations: {piece_legal_moves}")
         new_pos = input("Enter the [row col] to move the piece").split(" ")
         new_pos[0] = int(new_pos[0])
         new_pos[1] = int(new_pos[1])
-
-        piece_legal_moves = piece.get_legal_moves(self.board)
 
         if new_pos not in piece_legal_moves:
           print("Invalid choice -- try again")
@@ -156,3 +159,4 @@ class Human_Agent(Agent):
       if count == 10:
         print("You are trolling")
         break
+

@@ -36,9 +36,10 @@ class Board:
   def __init__(self):
     self.board = [[None for _ in range(COL_COUNT)] for _ in range(ROW_COUNT)]
     self.pieces = []
-    self._starting_position()
     self.w_king = None
     self.b_king = None
+    self._starting_position()
+
 
   def _starting_position(self):
     """Place starting position's chess pieces on board
@@ -417,7 +418,7 @@ class King(Piece):
 
   def get_legal_moves(self, board: Board):
     curr_pos = self.get_pos()
-    legal_moves = set()
+    legal_moves = []
     opponent_color = "B" if self.get_color() == "W" else "W"
     opponent_pieces = board.get_all_pieces_by_color(opponent_color)
 
@@ -426,10 +427,10 @@ class King(Piece):
 
       if (
           board.is_valid_location(possible_pos)
-          and all(possible_pos not in p.get_legal_moves() for p in opponent_pieces)
+          and all(possible_pos not in p.get_legal_moves(board) for p in opponent_pieces)
           and board.get_cell_piece(possible_pos).get_color() != self.get_color()
       ):
-        legal_moves.add(possible_pos)
+        legal_moves.append(possible_pos)
 
     return legal_moves
 
@@ -444,7 +445,7 @@ class Knight(Piece):
 
   def possible_legal_moves(self, board: Board):
     curr_pos = self.get_pos()
-    legal_moves = set()
+    legal_moves = []
 
     for offset in Knight.MOVE_OFFSETS:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
@@ -453,14 +454,14 @@ class Knight(Piece):
           board.is_cell_empty(possible_pos)
           or board.get_cell_piece(possible_pos).get_color() != self.get_color()
       ):
-        legal_moves.add(possible_pos)
+        legal_moves.append(possible_pos)
 
     return legal_moves
 
   def get_legal_moves(self, board: Board):
-    legal_moves = set()
-    my_pieces = board.get_all_pieces_by_color(self.get_color())
-    my_king = [piece for piece in my_pieces if piece is King][0]
+    legal_moves = []
+    if self.get_color() == "W": my_king = board.w_king
+    else: my_king = board.b_king
     checks = my_king.get_checks()
     pins = my_king.get_pins()
 
@@ -475,7 +476,7 @@ class Knight(Piece):
 
       for move in possible_moves:
         if move in check_blocks:
-          legal_moves.add(move)
+          legal_moves.append(move)
 
       return legal_moves
     else:
@@ -489,15 +490,15 @@ class Pawn(Piece):
 
   def possible_legal_moves(self, board: Board):
 
-    legal_moves = set()
+    legal_moves = []
 
     vertical_direction = -1 if self.get_color() == "W" else 1
     curr_pos = self.get_pos()
 
     # One forward
-    forward_move = [curr_pos[0] + vertical_direction, curr_pos[1]]
+    forward_move = (curr_pos[0] + vertical_direction, curr_pos[1])
     if board.is_valid_location(forward_move) and board.is_cell_empty(forward_move):
-      legal_moves.add(forward_move)
+      legal_moves.append(forward_move)
 
     # Capture moves (diagonal)
     diagonal_moves = [
@@ -509,14 +510,16 @@ class Pawn(Piece):
       if board.is_valid_location(move):
         piece_at_cell = board.get_cell_piece(move)
         if piece_at_cell and piece_at_cell.get_color() != self.get_color():
-          legal_moves.add(move)
+          legal_moves.append(move)
 
     return legal_moves
 
   def get_legal_moves(self, board: Board):
-    legal_moves = set()
-    my_pieces = board.get_all_pieces_by_color(self.get_color())
-    my_king = [piece for piece in my_pieces if piece is King][0]
+    legal_moves = []
+    if self.get_color() == "W":
+      my_king = board.w_king
+    else:
+      my_king = board.b_king
     checks = my_king.get_checks()
     pins = my_king.get_pins()
 
@@ -545,12 +548,12 @@ class Pawn(Piece):
 
       for move in possible_moves:
         if move in check_blocks:
-          legal_moves.add(move)
+          legal_moves.append(move)
 
       return legal_moves
 
     else:
-      return self.possible_legal_moves()
+      return self.possible_legal_moves(board)
 
 class Sliding_Piece(Piece):
   def __init__(self, color, pos):
@@ -558,7 +561,7 @@ class Sliding_Piece(Piece):
 
   def possible_legal_moves(self, board: Board, move_offsets):
     curr_pos = self.get_pos()
-    legal_moves = set()
+    legal_moves = []
 
     for offset in move_offsets:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
@@ -566,11 +569,11 @@ class Sliding_Piece(Piece):
       while board.is_valid_location(possible_pos):
         piece_at_cell = board.get_cell_piece(possible_pos)
         if piece_at_cell == None:
-          legal_moves.add(possible_pos)
+          legal_moves.append(possible_pos)
           possible_pos[0] += offset[0]
           possible_pos[1] += offset[1]
         elif piece_at_cell.get_color() != self.get_color():
-          legal_moves.add(possible_pos)
+          legal_moves.append(possible_pos)
           break
         else:
           break
@@ -586,13 +589,15 @@ class Queen(Sliding_Piece):
     super().__init__(color, pos)
     self.piece_type = "Q" if self.get_color() == "W" else "q"
 
-  def possible_legal_moves(self, board: Board):
-    return super().possible_legal_moves(board, Queen.MOVE_OFFSETS)
+  def possible_legal_moves(self, board: Board, offsets):
+    return super().possible_legal_moves(board, offsets)
 
   def get_legal_moves(self, board: Board):
-    legal_moves = set()
-    my_pieces = board.get_all_pieces_by_color(self.get_color())
-    my_king = [piece for piece in my_pieces if piece is King][0]
+    legal_moves = []
+    if self.get_color() == "W":
+      my_king = board.w_king
+    else:
+      my_king = board.b_king
     checks = my_king.get_checks()
     pins = my_king.get_pins()
 
@@ -605,7 +610,7 @@ class Queen(Sliding_Piece):
     elif self in pins:
       return self._pin_line(self.get_pos(), pins[self][1])
     elif len(checks) == 1:
-      possible_pos = self.possible_legal_moves(board)
+      possible_pos = self.possible_legal_moves(board, Queen.MOVE_OFFSETS)
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
 
@@ -613,12 +618,12 @@ class Queen(Sliding_Piece):
 
       for pos in possible_pos:
         if pos in check_blocks:
-          legal_moves.add(pos)
+          legal_moves.append(pos)
 
       return legal_moves
 
     else:
-      return self.possible_legal_moves()
+      return self.possible_legal_moves(board, Queen.MOVE_OFFSETS)
 
 
 class Rook(Sliding_Piece):
@@ -628,13 +633,15 @@ class Rook(Sliding_Piece):
     super().__init__(color, pos)
     self.piece_type = "R" if self.get_color() == "W" else "r"
 
-  def possible_legal_moves(self, board: Board):
-    return super().possible_legal_moves(board, Rook.MOVE_OFFSETS)
+  def possible_legal_moves(self, board: Board, offsets):
+    return super().possible_legal_moves(board, offsets)
 
   def get_legal_moves(self, board: Board):
-    legal_moves = set()
-    my_pieces = board.get_all_pieces_by_color(self.get_color())
-    my_king = [piece for piece in my_pieces if piece is King][0]
+    legal_moves = []
+    if self.get_color() == "W":
+      my_king = board.w_king
+    else:
+      my_king = board.b_king
     checks = my_king.get_checks()
     pins = my_king.get_pins()
 
@@ -647,7 +654,7 @@ class Rook(Sliding_Piece):
     elif self in pins:
       return self._pin_line(self.get_pos(), pins[self][1])
     elif len(checks) == 1:
-      possible_moves = self.possible_legal_moves(board)
+      possible_moves = self.possible_legal_moves(board, Rook.MOVE_OFFSETS)
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
 
@@ -655,9 +662,9 @@ class Rook(Sliding_Piece):
 
       for move in possible_moves:
         if move in check_blocks:
-          legal_moves.add(move)
+          legal_moves.append(move)
     else:
-      return self.possible_legal_moves()
+      return self.possible_legal_moves(board, Rook.MOVE_OFFSETS)
 
 
 class Bishop(Sliding_Piece):
@@ -667,13 +674,15 @@ class Bishop(Sliding_Piece):
     super().__init__(color, pos)
     self.piece_type = "B" if self.get_color() == "W" else "b"
 
-  def possible_legal_moves(self, board: Board):
-    return super().possible_legal_moves(board, Bishop.MOVE_OFFSETS)
+  def possible_legal_moves(self, board: Board, offsets):
+    return super().possible_legal_moves(board, offsets)
 
   def get_legal_moves(self, board: Board):
-    legal_moves = set()
-    my_pieces = board.get_all_pieces_by_color(self.get_color())
-    my_king = [piece for piece in my_pieces if piece is King][0]
+    legal_moves = []
+    if self.get_color() == "W":
+      my_king = board.w_king
+    else:
+      my_king = board.b_king
     checks = my_king.get_checks()
     pins = my_king.get_pins()
 
@@ -686,7 +695,7 @@ class Bishop(Sliding_Piece):
     elif self in pins:
       return self._pin_line(self.get_pos(), pins[self][1])
     elif len(checks) == 1:
-      possible_moves = self.possible_legal_moves(board)
+      possible_moves = self.possible_legal_moves(board, Bishop.MOVE_OFFSETS)
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
 
@@ -694,6 +703,6 @@ class Bishop(Sliding_Piece):
 
       for move in possible_moves:
         if move in check_blocks:
-          legal_moves.add(move)
+          legal_moves.append(move)
     else:
-      return self.possible_legal_moves()
+      return self.possible_legal_moves(board, Bishop.MOVE_OFFSETS)
