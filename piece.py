@@ -52,7 +52,7 @@ class King(Piece):
 
   def __init__(self, color, pos):
     super().__init__(color, pos)
-    self.piece_type = "K" if self.color == "W" else "k"
+    self.piece_type = "K" if self.get_color() == "W" else "k"
 
   def checks_and_pins(self, board: Board):
     """Returns all checks and pins for a king in a given board position
@@ -150,6 +150,8 @@ class King(Piece):
 
       if not board.is_valid_location(possible_pos):
         continue
+      elif board.is_cell_empty(possible_pos):
+        legal_moves.add(possible_pos)
       elif board.get_cell_piece(possible_pos).get_color() == self.get_color():
         continue
       # Check if any opponent pieces can access this possible position
@@ -167,7 +169,7 @@ class Knight(Piece):
 
   def __init__(self, color, pos):
     super().__init__(color, pos)
-    self.piece_type = "N" if self.color == "W" else "n"
+    self.piece_type = "N" if self.get_color() == "W" else "n"
 
   def get_legal_moves(self, board: Board):
     curr_pos = self.get_pos()
@@ -178,10 +180,10 @@ class Knight(Piece):
 
       if not board.is_valid_location(possible_pos):
         continue
-      elif board.get_cell_piece(possible_pos).get_color() == self.get_color():
-        continue
-      else:
+      elif board.is_cell_empty(possible_pos) or board.get_cell_piece(possible_pos).get_color() != self.get_color():
         legal_moves.add(possible_pos)
+      else:
+        continue
 
     return legal_moves
 
@@ -189,7 +191,7 @@ class Knight(Piece):
 class Pawn(Piece):
   def __init__(self, color, pos):
     super().__init__(color, pos)
-    self.piece_type = "P" if self.color == "W" else "p"
+    self.piece_type = "P" if self.get_color() == "W" else "p"
 
   def get_legal_moves(self, board: Board):
     legal_moves = set()
@@ -272,34 +274,34 @@ class Sliding_Piece(Piece):
 
 
 class Queen(Sliding_Piece):
-  MOVE_OFFSETS = [(), 1, 0(0, 1), (-1, 0), (0, -1),
+  MOVE_OFFSETS = [(1, 0), (0, 1), (-1, 0), (0, -1),
                   (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
   def __init__(self, color, pos):
     super().__init__(color, pos)
-    self.piece_type = "Q" if self.color == "W" else "q"
+    self.piece_type = "Q" if self.get_color() == "W" else "q"
 
   def get_legal_moves(self, board: Board):
     return super().get_legal_moves(board, Queen.MOVE_OFFSETS)
 
 
-class Rook(Piece):
+class Rook(Sliding_Piece):
   MOVE_OFFSETS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
   def __init__(self, color, pos):
     super().__init__(color, pos)
-    self.piece_type = "R" if self.color == "W" else "r"
+    self.piece_type = "R" if self.get_color() == "W" else "r"
 
   def get_legal_moves(self, board: Board):
     return super().get_legal_moves(board, Rook.MOVE_OFFSETS)
 
 
-class Bishop(Piece):
+class Bishop(Sliding_Piece):
   MOVE_OFFSETS = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
 
   def __init__(self, color, pos):
     super().__init__(color, pos)
-    self.piece_type = "B" if self.color == "w" else "b"
+    self.piece_type = "B" if self.get_color() == "W" else "b"
 
   def get_legal_moves(self, board: Board):
     return super().get_legal_moves(board, Bishop.MOVE_OFFSETS)

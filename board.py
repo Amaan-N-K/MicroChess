@@ -23,6 +23,7 @@ class Board:
   def __init__(self):
     self.board = [[None for _ in range(COL_COUNT)] for _ in range(ROW_COUNT)]
     self.pieces = []
+    self._starting_position()
 
   def _starting_position(self):
     """Place starting position's chess pieces on board
@@ -65,9 +66,9 @@ class Board:
         Piece | None: Object at board cell 
     """
     if not self.is_valid_location(pos):
-      raise ValueError(f"Invalid cell location: {pos}")
+      raise ValueError(f"Invalid board location: {pos}")
 
-    return self.board[pos[0], pos[1]]
+    return self.board[pos[0]][pos[1]]
 
   def is_cell_empty(self, pos):
     """Returns whether is a board cell is empty (ie. None at cell)
@@ -82,9 +83,9 @@ class Board:
         bool: Returns true if cell is empty (ie. contains None)
     """
     if not self.is_valid_location(pos):
-      raise ValueError(f"Invalid cell location: {pos}")
+      raise ValueError(f"Invalid board location: {pos}")
 
-    return self.get_cell_piece(pos[0], pos[1]) == None
+    return self.get_cell_piece(pos) == None
 
   def _place_piece(self, piece, pos):
     """Places a piece at a given pos and updated piece's pos properties
@@ -97,7 +98,7 @@ class Board:
         ValueError: If pos is not a valid board location
     """
     if not self.is_valid_location(pos):
-      raise ValueError(f"Invalid cell location: {pos}")
+      raise ValueError(f"Invalid board location: {pos}")
     self.board[pos[0], pos[1]] = piece
     if piece in self.pieces:
       raise ValueError("This piece is being counted twice in self.pieces")
@@ -115,7 +116,7 @@ class Board:
         ValueError: If there is no piece to remove at the given pos
     """
     if not self.is_valid_location(pos):
-      raise ValueError(f"Invalid cell location: {pos}")
+      raise ValueError(f"Invalid board location: {pos}")
     piece = self.board[pos[0], pos[1]]
     if not piece:
       raise ValueError(f"No piece to remove at location: {pos}")
