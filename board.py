@@ -40,7 +40,6 @@ class Board:
     self.b_king = None
     self._starting_position()
 
-
   def _starting_position(self):
     """Place starting position's chess pieces on board
     """
@@ -57,8 +56,10 @@ class Board:
             self.w_king = piece
           if c == "k":
             self.b_king = piece
+
           self._place_piece(piece, [row_idx, col_idx])
           col_idx += 1
+
 
   def is_valid_location(self, pos):
     """Returns whether a list is a valid board location
@@ -496,7 +497,7 @@ class Pawn(Piece):
     curr_pos = self.get_pos()
 
     # One forward
-    forward_move = (curr_pos[0] + vertical_direction, curr_pos[1])
+    forward_move = [curr_pos[0] + vertical_direction, curr_pos[1]]
     if board.is_valid_location(forward_move) and board.is_cell_empty(forward_move):
       legal_moves.append(forward_move)
 
@@ -568,7 +569,10 @@ class Sliding_Piece(Piece):
 
       while board.is_valid_location(possible_pos):
         piece_at_cell = board.get_cell_piece(possible_pos)
+        print('before')
         if piece_at_cell == None:
+          print('after')
+          print(f"pos is: {possible_pos}")
           legal_moves.append(possible_pos)
           possible_pos[0] += offset[0]
           possible_pos[1] += offset[1]
