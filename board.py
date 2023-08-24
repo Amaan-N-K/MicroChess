@@ -24,6 +24,8 @@ class Board:
     self.board = [[None for _ in range(COL_COUNT)] for _ in range(ROW_COUNT)]
     self.pieces = []
     self._starting_position()
+    self.w_king = None
+    self.b_king = None
 
   def _starting_position(self):
     """Place starting position's chess pieces on board
@@ -37,9 +39,14 @@ class Board:
           col_idx += int(c)
         else:
           piece_info = PIECE_DICT.get(c, None)
+
           piece_color = piece_info[0]
           piece_class = piece_info[1]
           piece = piece_class(piece_color, [row_idx, col_idx])
+          if c == "K":
+            self.w_king = piece
+          if c == "k":
+            self.b_king = piece
           self._place_piece(piece, [row_idx, col_idx])
           col_idx += 1
 
