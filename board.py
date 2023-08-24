@@ -119,10 +119,10 @@ class Board:
 
     piece_at_pos = self.get_cell_piece(pos)
     if piece_at_pos == None:
-      self.board[pos[0], pos[1]] = piece
+      self.board[pos[0]][pos[1]] = piece
     elif piece_at_pos.get_color() != piece.get_color():
       self._remove_piece(piece_at_pos)
-      self.board[pos[0], pos[1]] = piece
+      self.board[pos[0]][pos[1]] = piece
     else:
       raise ValueError(f"Cannot move piece to same color occupied cell")
     if piece in self.pieces:
@@ -142,10 +142,10 @@ class Board:
     """
     if not self.is_valid_location(pos):
       raise ValueError(f"Invalid board location: {pos}")
-    piece = self.board[pos[0], pos[1]]
+    piece = self.board[pos[0]][pos[1]]
     if not piece:
       raise ValueError(f"No piece to remove at location: {pos}")
-    self.board[pos[0], pos[1]] = None
+    self.board[pos[0]][pos[1]] = None
     self.pieces.remove(piece)
     piece.remove_pos()
     return piece
