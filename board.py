@@ -29,6 +29,7 @@ class Board:
     """Place starting position's chess pieces on board
     """
     rows = STARTING_FEN.split('/')
+
     for row_idx, row in enumerate(rows):
       col_idx = 0
       for c in row:
@@ -141,6 +142,9 @@ class Board:
         List[Piece]: Chess piece
     """
     return self.pieces
+  
+  def get_all_pieces_by_color(self, color):
+    return list(filter(lambda x: x.get_color() == color, self.get_all_pieces()))
 
   def move_piece(self, piece, pos):
     """Given a piece and a new pos, move the piece to the new pos and clear the old pos

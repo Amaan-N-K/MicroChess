@@ -1,6 +1,7 @@
 """
 Chess piece implementations
 """
+from typing import List
 from board import Board
 
 
@@ -53,6 +54,12 @@ class King(Piece):
   def __init__(self, color, pos):
     super().__init__(color, pos)
     self.piece_type = "K" if self.get_color() == "W" else "k"
+    
+  def legal_moves_in_check(self, checks: List[Piece], board: Board):
+    if len(checks) == 2:
+      moves = self.get_legal_moves(board)
+      
+
 
   def checks_and_pins(self, board: Board):
     """Returns all checks and pins for a king in a given board position
@@ -194,28 +201,42 @@ class Pawn(Piece):
     self.piece_type = "P" if self.get_color() == "W" else "p"
 
   def get_legal_moves(self, board: Board):
+
+    pieces = board.get_all_pieces_by_color(self.get_color())
+    my_king = [piece for piece in pieces if piece is King][0]
+    checks_and_pins = my_king.checks_and_pins(board)
+    checks = checks_and_pins[0]
+    pins = checks_and_pins[1]
+
+
     legal_moves = set()
-    vertical_direction = -1 if self.get_color() == "W" else 1
-    curr_pos = self.get_pos()
 
-    # One forward
-    forward_move = [curr_pos[0] + vertical_direction, curr_pos[1]]
-    if board.is_valid_location(forward_move) and board.is_cell_empty(forward_move):
-      legal_moves.add(forward_move)
+    if self in pins:
+      return legal_moves
+    elif len(checks) == 1:
+      return
+    else:
+      vertical_direction = -1 if self.get_color() == "W" else 1
+      curr_pos = self.get_pos()
 
-    # Capture moves (diagonal)
-    diagonal_moves = [
-        [curr_pos[0] + vertical_direction, curr_pos[1] - 1],
-        [curr_pos[0] + vertical_direction, curr_pos[1] + 1]
-    ]
+      # One forward
+      forward_move = [curr_pos[0] + vertical_direction, curr_pos[1]]
+      if board.is_valid_location(forward_move) and board.is_cell_empty(forward_move):
+        legal_moves.add(forward_move)
 
-    for move in diagonal_moves:
-      if board.is_valid_location(move):
-        piece_at_cell = board.get_cell_piece(move)
-        if piece_at_cell and piece_at_cell.get_color() != self.get_color():
-          legal_moves.add(move)
+      # Capture moves (diagonal)
+      diagonal_moves = [
+          [curr_pos[0] + vertical_direction, curr_pos[1] - 1],
+          [curr_pos[0] + vertical_direction, curr_pos[1] + 1]
+      ]
 
-    return legal_moves
+      for move in diagonal_moves:
+        if board.is_valid_location(move):
+          piece_at_cell = board.get_cell_piece(move)
+          if piece_at_cell and piece_at_cell.get_color() != self.get_color():
+            legal_moves.add(move)
+
+      return legal_moves
 
   def promote(self):
     print("What piece would you like to promote to:\n1. Queen\n2. Knight\n3. Rook\n4. Bishop")
