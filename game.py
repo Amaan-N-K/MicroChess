@@ -4,9 +4,9 @@ from board import *
 
 class Game:
   def __init__(self, p1, p2):
-    self.board = Board()
     self.p1 = p1
     self.p2 = p2
+    self.board = p1.board
     self.moves = []
     self.half_move_count = 0
     self.full_move_count = 0

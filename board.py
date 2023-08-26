@@ -261,7 +261,7 @@ class Piece:
     if vector[1] != 0:
       vector_direction[1] = (vector[1]/abs(vector[1]))
 
-    check_line = set()
+    check_line = []
 
     curr_pos = king_pos
 
@@ -269,7 +269,7 @@ class Piece:
       curr_pos[0] += vector_direction[0]
       curr_pos[1] += vector_direction[1]
 
-      check_line.add(curr_pos)
+      check_line.append(curr_pos)
 
     return check_line
 
@@ -281,7 +281,7 @@ class Piece:
     if vector[1] != 0:
       vector_direction[1] = (vector[1]/abs(vector[1]))
 
-    pin_line = set()
+    pin_line = []
 
     curr_pos = pin_pos
 
@@ -289,7 +289,7 @@ class Piece:
       curr_pos[0] += vector_direction[0]
       curr_pos[1] += vector_direction[1]
 
-      pin_line.add(curr_pos)
+      pin_line.append(curr_pos)
 
     return pin_line
 
@@ -340,9 +340,9 @@ class King(Piece):
     # Checking for checks and pins by sliding pieces
     for offset in King.MOVE_OFFSETS:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
-
+      shields = []
       while board.is_valid_location(possible_pos):
-        shields = []
+
         piece_at_cell = board.get_cell_piece(possible_pos)
 
         if piece_at_cell == None:
@@ -366,7 +366,7 @@ class King(Piece):
             possible_pos[1] += offset[1]
 
         # Checking for horizontal/vertical (ex. (1 * 0) => 0)) and not same color
-        elif (offset[0] * offset[1] == 0) and (piece_at_cell is Rook or piece_at_cell is Queen):
+        elif (offset[0] * offset[1] == 0) and (isinstance(piece_at_cell, Rook) or isinstance(piece_at_cell, Rook)):
           if len(shields) == 1:
             pins[shields[0][0]] = (shields[0][1], piece_at_cell.get_pos())
           else:
@@ -375,7 +375,7 @@ class King(Piece):
           break
 
         # Checking for diagonal (ex. (1 * 1) => 1)) and not same color
-        elif (offset[0] * offset[1] != 0) and (piece_at_cell is Bishop or piece_at_cell is Queen):
+        elif (offset[0] * offset[1] != 0) and (isinstance(piece_at_cell, Bishop) or isinstance(piece_at_cell, Rook)):
           if len(shields) == 1:
             pins[shields[0][0]] = (shields[0][1], piece_at_cell.get_pos())
           else:
@@ -426,11 +426,13 @@ class King(Piece):
     for offset in King.MOVE_OFFSETS:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
 
-      if (
-          board.is_valid_location(possible_pos)
-          and all(possible_pos not in p.get_legal_moves(board) for p in opponent_pieces)
-          and board.get_cell_piece(possible_pos).get_color() != self.get_color()
-      ):
+      if not board.is_valid_location(possible_pos):
+        continue
+      elif any(possible_pos in p.get_legal_moves(board) for p in opponent_pieces):
+        continue
+      elif board.get_cell_piece(possible_pos).get_color() == self.get_color():
+        continue
+      else:
         legal_moves.append(possible_pos)
 
     return legal_moves
@@ -455,7 +457,7 @@ class Knight(Piece):
           board.is_cell_empty(possible_pos)
           or board.get_cell_piece(possible_pos).get_color() != self.get_color()
       ):
-        legal_moves.append(possible_pos)
+        legal_moves.append(possible_pos.copy())
 
     return legal_moves
 
@@ -467,7 +469,7 @@ class Knight(Piece):
     pins = my_king.get_pins()
 
     if len(checks) == 2 or self in pins:
-      return set()
+      return []
     elif len(checks) == 1:
       possible_moves = self.possible_legal_moves(board)
       king_pos = my_king.get_pos()
@@ -499,7 +501,7 @@ class Pawn(Piece):
     # One forward
     forward_move = [curr_pos[0] + vertical_direction, curr_pos[1]]
     if board.is_valid_location(forward_move) and board.is_cell_empty(forward_move):
-      legal_moves.append(forward_move)
+      legal_moves.append(forward_move.copy())
 
     # Capture moves (diagonal)
     diagonal_moves = [
@@ -525,9 +527,9 @@ class Pawn(Piece):
     pins = my_king.get_pins()
 
     if len(checks) == 2:
-      return set()
+      return []
     elif len(checks) == 1 and self in pins:
-      return set()
+      return []
     # A pawn can only move in a pin if the attacker is ahead of it vertically
     elif self in pins and pins[self][0] == "v":
 
@@ -537,9 +539,9 @@ class Pawn(Piece):
       if board.is_cell_empty(possible_moves):
         return {possible_pos}
       else:
-        return set()
+        return []
     elif self in pins:
-      return set()
+      return []
     elif len(checks) == 1:
       possible_moves = self.possible_legal_moves(board)
       king_pos = my_king.get_pos()
@@ -568,16 +570,13 @@ class Sliding_Piece(Piece):
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
 
       while board.is_valid_location(possible_pos):
+        print(possible_pos)
         piece_at_cell = board.get_cell_piece(possible_pos)
-        print('before')
-        if piece_at_cell == None:
-          print('after')
-          print(f"pos is: {possible_pos}")
-          legal_moves.append(possible_pos)
-          possible_pos[0] += offset[0]
-          possible_pos[1] += offset[1]
+        if piece_at_cell is None:
+          legal_moves.append(possible_pos.copy())
+          possible_pos = [possible_pos[0] + offset[0], possible_pos[1] + offset[1]]
         elif piece_at_cell.get_color() != self.get_color():
-          legal_moves.append(possible_pos)
+          legal_moves.append(possible_pos.copy())
           break
         else:
           break
@@ -606,9 +605,9 @@ class Queen(Sliding_Piece):
     pins = my_king.get_pins()
 
     if len(checks) == 2:
-      return set()
+      return []
     elif len(checks) == 1 and self in pins:
-      return set()
+      return []
 
     # Queen can always take a pinner piece
     elif self in pins:
@@ -654,7 +653,7 @@ class Rook(Sliding_Piece):
         or (len(checks) == 1 and self in pins)
         or (self in pins and (pins[self][0] == "d"))
     ):
-      return set()
+      return []
     elif self in pins:
       return self._pin_line(self.get_pos(), pins[self][1])
     elif len(checks) == 1:
@@ -695,7 +694,7 @@ class Bishop(Sliding_Piece):
         or (len(checks) == 1 and self in pins)
         or (self in pins and pins[self][0] != "d")
     ):
-      return set()
+      return []
     elif self in pins:
       return self._pin_line(self.get_pos(), pins[self][1])
     elif len(checks) == 1:
