@@ -13,9 +13,6 @@ class Piece:
     raise NotImplementedError(
         "The parent piece class has no piece type yet defined")
 
-  def __print__(self) -> None:
-    print(str(self))
-
   def get_color(self) -> int:
     return self.color
 

@@ -47,7 +47,7 @@ class Board:
 
     return acc[:-1]  # Remove last slash
 
-  def __print__(self) -> None:
+  def print_board(self) -> None:
     """Prints board state in a human readable format and expects pieces to have __str__ defined
     """
     for row in self.board:
