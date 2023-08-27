@@ -17,52 +17,60 @@ class Game:
     self.board.move_piece(piece, new_pos)
     return 1 if not piece_at_new_pos or piece is Pawn else 0
 
-  def is_game_over(self, color):
-    if color == "B":
-      self.board.w_king.checks_and_pins(self.board)
-      all_moves = set()
-      for piece in self.board.get_all_pieces_by_color("W"):
-        all_moves.update(piece.get_legal_moves(self.board))
-        if len(all_moves) == 0 and len(self.board.w_king.get_checks()) > 1:
-          return -1
-        elif len(all_moves) == 0:
-          return 0
+  def is_game_over(self, color) -> list:
+    if color == "W":
+      all_moves = self.board.all_moves_by_color('W')
+      if len(all_moves) == 0 and len(self.board.w_king.get_checks()) > 1:
+        return [True, 'W']
+      elif len(all_moves) == 0:
+        return [True, 'D']
+      else:
+        return [False]
     else:
-      self.board.b_king.checks_and_pins(self.board)
-      all_moves = set()
-      for piece in self.board.get_all_pieces_by_color("B"):
-        all_moves.update(piece.get_legal_moves(self.board))
-        if len(all_moves) == 0 and len(self.board.b_king.get_checks()) > 1:
-          return "W"
-        elif len(all_moves) == 0:
-          return 1
+      all_moves = self.board.all_moves_by_color('B')
+
+      if len(all_moves) == 0 and len(self.board.b_king.get_checks()) > 1:
+        return [True, 'B']
+      elif len(all_moves) == 0:
+        return [True, 'D']
+      else:
+        return [False]
 
   def play(self):
-    state = "playing"
-    game_over = False
-    self.board.w_king.checks_and_pins(self.board)
-    while not game_over:
-      for player in [self.p1, self.p2]:
-        curr_pos, new_pos = player.get_move()
-        move_type = self.apply_move(curr_pos, new_pos)
-        if move_type == 0:
-          self.half_move_count += 1
-        else:
-          self.half_move_count = 0
+    # while not game_state[0]:
+    #   for player in [self.p1, self.p2]:
+    #     turn = player.color
+    #     curr_pos, new_pos = player.get_move()
+    #     self.apply_move(curr_pos, new_pos)
+    #     game_state = self.is_game_over(turn)
+    #     if game_state[0]:
+    #       break
+    #
+    #   turn = self.p1.color
+    #   game_state = self.is_game_over(turn)
+    #
+    # return game_state[1]
 
-        state = self.is_game_over(player.color)
-        if state is int:
-          game_over = True
-          break
+        # if move_type == 0:
+        #   self.half_move_count += 1
+        # else:
+        #   self.half_move_count = 0
 
-      self.full_move_count += 1
 
-    if state == -1:
-      return "Black Wins!"
-    elif state == 1:
-      return "White Wins!"
-    else:
-      return "Draw"
+      # self.full_move_count += 1
+    while True:
+      game_state = self.one_round()
+      if game_state[0]:
+        return 'Result:' + game_state[1]
+
+  def one_round(self):
+    for player in [self.p1, self.p2]:
+      game_state = self.is_game_over(player.color)
+      if game_state[0]:
+        return game_state
+      curr_pos, new_pos = player.get_move()
+      self.apply_move(curr_pos, new_pos)
+
 
   def promote(self, pawn):
     """Takes agent input on what piece to promote the pawn to
@@ -130,7 +138,6 @@ class Human_Agent(Agent):
     self.board.print_board()
     print("###################################")
     while True:
-      print('recursion')
       try:
         curr_pos = input("Enter the [row col] of the piece to move").split(" ")
         curr_pos[0] = int(curr_pos[0])
@@ -159,4 +166,3 @@ class Human_Agent(Agent):
       if count == 10:
         print("You are trolling")
         break
-
