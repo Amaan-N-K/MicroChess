@@ -214,7 +214,6 @@ class Board:
   def print_board(self):
     """Prints board state in a human readable format
     """
-    print()
     for row in self.board:
       row_string = "|"
       for piece in row:
@@ -222,6 +221,25 @@ class Board:
         row_string += piece_char + "|"
 
       print(row_string)
+
+  def all_moves_by_color(self, color):
+    if color == 'W':
+      self.w_king.checks_and_pins(self)
+      all_moves = []
+      pieces = self.get_all_pieces_by_color("W")
+      for piece in pieces:
+        all_moves.extend(piece.get_legal_moves(self))
+    else:
+      self.b_king.checks_and_pins(self)
+      all_moves = []
+      pieces = self.get_all_pieces_by_color("B")
+      for piece in pieces:
+        all_moves.extend(piece.get_legal_moves(self))
+
+    return all_moves
+
+
+
 
 class Piece:
   def __init__(self, color, pos):
@@ -237,7 +255,7 @@ class Piece:
     self.piece_type = None
 
   def __str__(self):
-    if self.piece_type == None:
+    if self.piece_type is None:
       raise NotImplementedError("This piece is not yet defined")
     return self.piece_type
 
@@ -294,6 +312,17 @@ class Piece:
     return pin_line
 
   def get_legal_moves(self, board: Board):
+    """Return a list of legal piece moves
+
+    Args:
+        board (Board): Board object
+
+    Raises:
+        NotImplementedError: Method should be overrided by children classes
+    """
+    raise NotImplementedError
+
+  def attacking_squares(self, board: Board):
     """Return a list of legal piece moves
 
     Args:
@@ -417,6 +446,18 @@ class King(Piece):
       self.checks = checks
       self.pins = pins
 
+  def attacking_squares(self, board: Board):
+    curr_pos = self.get_pos()
+    legal_moves = []
+    for offset in King.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+      if not board.is_valid_location(possible_pos):
+        continue
+      else:
+        legal_moves.append(possible_pos)
+
+    return legal_moves
+
   def get_legal_moves(self, board: Board):
     curr_pos = self.get_pos()
     legal_moves = []
@@ -426,13 +467,12 @@ class King(Piece):
     for offset in King.MOVE_OFFSETS:
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
 
-      if not board.is_valid_location(possible_pos):
-        continue
-      elif any(possible_pos in p.get_legal_moves(board) for p in opponent_pieces):
-        continue
-      elif board.get_cell_piece(possible_pos).get_color() == self.get_color():
-        continue
-      else:
+      if (
+          board.is_valid_location(possible_pos) and
+          all(possible_pos not in p.attacking_squares(board) for p in opponent_pieces) and
+          (board.get_cell_piece(possible_pos) is None or
+           board.get_cell_piece(possible_pos).get_color() != self.get_color())
+      ):
         legal_moves.append(possible_pos)
 
     return legal_moves
@@ -458,6 +498,18 @@ class Knight(Piece):
           or board.get_cell_piece(possible_pos).get_color() != self.get_color()
       ):
         legal_moves.append(possible_pos.copy())
+
+    return legal_moves
+
+  def attacking_squares(self, board: Board):
+    curr_pos = self.get_pos()
+    legal_moves = []
+
+    for offset in Knight.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+
+      if board.is_valid_location(possible_pos):
+        legal_moves.append(possible_pos)
 
     return legal_moves
 
@@ -517,6 +569,24 @@ class Pawn(Piece):
 
     return legal_moves
 
+  def attacking_squares(self, board: Board):
+    legal_moves = []
+
+    vertical_direction = -1 if self.get_color() == "W" else 1
+    curr_pos = self.get_pos()
+
+    diagonal_moves = [
+      [curr_pos[0] + vertical_direction, curr_pos[1] - 1],
+      [curr_pos[0] + vertical_direction, curr_pos[1] + 1]
+    ]
+
+    for move in diagonal_moves:
+      if board.is_valid_location(move):
+        legal_moves.append(move)
+
+    return legal_moves
+
+
   def get_legal_moves(self, board: Board):
     legal_moves = []
     if self.get_color() == "W":
@@ -532,12 +602,10 @@ class Pawn(Piece):
       return []
     # A pawn can only move in a pin if the attacker is ahead of it vertically
     elif self in pins and pins[self][0] == "v":
-
-      possible_moves = self.possible_legal_moves(board)
       direction = -1 if self.get_color() == "W" else 1
       possible_pos = [self.get_pos()[0] + direction, self.get_pos()[1]]
-      if board.is_cell_empty(possible_moves):
-        return {possible_pos}
+      if board.is_cell_empty(possible_pos):
+        return [possible_pos]
       else:
         return []
     elif self in pins:
@@ -570,7 +638,6 @@ class Sliding_Piece(Piece):
       possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
 
       while board.is_valid_location(possible_pos):
-        print(possible_pos)
         piece_at_cell = board.get_cell_piece(possible_pos)
         if piece_at_cell is None:
           legal_moves.append(possible_pos.copy())
@@ -582,6 +649,14 @@ class Sliding_Piece(Piece):
           break
 
     return legal_moves
+
+  def get_legal_moves(self, board: Board):
+    raise NotImplementedError
+
+  def attacking_squares(self, board: Board):
+    raise NotImplementedError
+
+
 
 
 class Queen(Sliding_Piece):
@@ -628,6 +703,23 @@ class Queen(Sliding_Piece):
     else:
       return self.possible_legal_moves(board, Queen.MOVE_OFFSETS)
 
+  def attacking_squares(self, board: Board):
+    curr_pos = self.get_pos()
+    legal_moves = []
+
+    for offset in Queen.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+
+      while board.is_valid_location(possible_pos):
+        piece_at_cell = board.get_cell_piece(possible_pos)
+        if piece_at_cell is None:
+          legal_moves.append(possible_pos.copy())
+          possible_pos = [possible_pos[0] + offset[0], possible_pos[1] + offset[1]]
+        else:
+          legal_moves.append(possible_pos.copy())
+          break
+    return legal_moves
+
 
 class Rook(Sliding_Piece):
   MOVE_OFFSETS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
@@ -666,8 +758,27 @@ class Rook(Sliding_Piece):
       for move in possible_moves:
         if move in check_blocks:
           legal_moves.append(move)
+
+      return legal_moves
     else:
       return self.possible_legal_moves(board, Rook.MOVE_OFFSETS)
+
+  def attacking_squares(self, board: Board):
+    curr_pos = self.get_pos()
+    legal_moves = []
+
+    for offset in Rook.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+
+      while board.is_valid_location(possible_pos):
+        piece_at_cell = board.get_cell_piece(possible_pos)
+        if piece_at_cell is None:
+          legal_moves.append(possible_pos.copy())
+          possible_pos = [possible_pos[0] + offset[0], possible_pos[1] + offset[1]]
+        else:
+          legal_moves.append(possible_pos.copy())
+          break
+    return legal_moves
 
 
 class Bishop(Sliding_Piece):
@@ -707,5 +818,26 @@ class Bishop(Sliding_Piece):
       for move in possible_moves:
         if move in check_blocks:
           legal_moves.append(move)
+      return legal_moves
     else:
       return self.possible_legal_moves(board, Bishop.MOVE_OFFSETS)
+
+  def attacking_squares(self, board: Board):
+    curr_pos = self.get_pos()
+    legal_moves = []
+
+    for offset in Bishop.MOVE_OFFSETS:
+      possible_pos = [curr_pos[0] + offset[0], curr_pos[1] + offset[1]]
+
+      while board.is_valid_location(possible_pos):
+        piece_at_cell = board.get_cell_piece(possible_pos)
+        if piece_at_cell is None:
+          legal_moves.append(possible_pos.copy())
+          possible_pos = [possible_pos[0] + offset[0], possible_pos[1] + offset[1]]
+        else:
+          legal_moves.append(possible_pos.copy())
+          break
+    return legal_moves
+
+
+
