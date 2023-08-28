@@ -97,7 +97,6 @@ class King(Piece):
       possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
       shields = []
       while self.board.is_valid_pos(possible_pos):
-
         piece_at_cell = self.board.lookup(possible_pos)
 
         if piece_at_cell is None:
@@ -282,8 +281,6 @@ class Knight(Piece):
       return []
     checks = my_king.get_checks()
     pins = my_king.get_pins()
-
-    print(checks)
     # Knight can never move if pinned
 
     if len(checks) == 2 or self in pins:
@@ -293,8 +290,6 @@ class Knight(Piece):
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
       check_blocks = check_line(king_pos, check_pos)
-      print(possible_moves)
-
       moves = []
       for move in possible_moves:
         if move in check_blocks:
@@ -479,13 +474,13 @@ class Bishop(SlidingPiece):
 def check_line(king_pos: tuple[int, int], checker_pos: tuple[int, int]) -> list[tuple[int, int]]:
   vector = (checker_pos[0] - king_pos[0], checker_pos[1] - king_pos[1])
   if vector[0] != 0:
-    vector = (vector[0] / abs(vector[0]), vector[1])
+    vector = (vector[0] // abs(vector[0]), vector[1])
   if vector[1] != 0:
-    vector = (vector[0], vector[1] / abs(vector[1]))
+    vector = (vector[0], vector[1] // abs(vector[1]))
 
   pin_line = []
 
-  curr_pos = checker_pos
+  curr_pos = king_pos
 
   while curr_pos != checker_pos:
     curr_pos = (int(curr_pos[0] + vector[0]), int(curr_pos[1] + vector[1]))
@@ -512,5 +507,5 @@ def pin_line(pin_pos: tuple[int, int], pinner_pos: tuple[int, int]) -> list[tupl
 
   return pin_line
 
-#test push
+
 
