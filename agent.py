@@ -6,6 +6,12 @@ class Agent:
     self.color = color
     self.board = board
 
+  def get_color(self) -> int:
+    return self.color
+
+  def my_king(self) -> any:
+    return self.board.get_piece("K") if self.get_color() == 0 else self.board.get_piece("k")
+
   def get_move(self) -> list[tuple[int, int]]:
     raise NotImplementedError("This method must be ovverided by child classes")
 
@@ -16,8 +22,8 @@ class HumanAgent(Agent):
 
   def get_move(self) -> list[tuple[int, int]]:
     count = 0
-    print(self.board)
     print("###################################")
+    self.board.print_board()
     while True:
       try:
         curr_pos = input(

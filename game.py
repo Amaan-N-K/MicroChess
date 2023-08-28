@@ -19,6 +19,9 @@ class Game:
       for p in self.players:
         curr_pos, new_pos = p.get_move()
         piece = self.board.lookup(curr_pos)
+        if piece.get_color() != p.get_color() or new_pos not in piece.moves():
+          print("Invalid choice -- you lose a turn HAHAHA")
+          continue
         self.board.remove(curr_pos)
         self.board.remove(new_pos)
         self.board.place(new_pos)
@@ -39,7 +42,7 @@ class Game:
         'K': lambda: King(1, pos, self.board),
     }
 
-    return mapping.get(fen_char)
+    return mapping.get(fen_char)()
 
   def _starting_position(self):
     """Place starting position's chess pieces on board
