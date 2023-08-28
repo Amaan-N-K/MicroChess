@@ -3,6 +3,7 @@ from board import Board
 WHITE, BLACK = 0, 1
 
 
+
 class Piece:
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
     self.color = color
@@ -150,6 +151,46 @@ class King(Piece):
       self.checks = checks
       self.pins = pins
 
+  def is_pos_attacked(self, pos: tuple[int, int]) -> bool:
+
+    for offset in self.offsets:
+      next_pos = (pos[0] + offset[0], pos[1] + offset[1])
+      while self.board.is_valid_pos(next_pos):
+        piece = self.board.lookup(pos)
+        if piece.get_color() == self.get_color():
+          return False
+        else:
+          if offset[0] * offset[1] == 0 and isinstance(piece, Rook) or isinstance(piece, Queen):
+            return True
+          elif offset[0] * offset[1] == 1 and  isinstance(piece, Bishop) or isinstance(piece, Queen):
+            return True
+          elif offset[0] * offset[1] == 1 and (next_pos[0]-offset[0], next_pos[1]-offset[0]) == pos:
+            return True
+          else:
+            next_pos = (next_pos[0] + offset[0], next_pos[1] + offset[1])
+
+    for offset in Knight.MOVE_OFFSETS:
+      next_pos = (pos[0] + offset[0], pos[1] + offset[1])
+      if pos == next_pos:
+        return True
+
+    return False
+
+  def moves(self) -> list[tuple[int, int]]:
+    curr_pos = self.get_pos()
+    moves = []
+    opponent_color = BLACK if self.get_color() == WHITE else WHITE
+
+    for offset in self.offsets:
+      possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
+      if not self.board.is_valid_pos(possible_pos):
+        continue
+      elif self.board.lookup(possible_pos) is None and not self.is_pos_attacked(possible_pos):
+        moves.append(possible_pos)
+      elif self.board.lookup(possible_pos).get_color() == opponent_color and not self.is_pos_attacked(possible_pos):
+        moves.append(possible_pos)
+
+    return moves
 
 class Knight(Piece):
   MOVE_OFFSETS = [(1, 2), (1, -2), (-1, 2), (-1, -2),
