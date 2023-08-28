@@ -21,6 +21,9 @@ class Board:
     self.pieces[str(piece)] = [p for p in self.pieces.get(
         str(piece), []) if p != piece]
 
+  def get_piece(self, piece: str) -> Optional[any]:
+    return self.pieces.get(piece, None)
+
   def place(self, pos: tuple[int, int], piece: any) -> None:
     self.board[pos[0]][pos[1]] = piece
 
