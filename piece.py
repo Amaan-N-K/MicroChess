@@ -55,6 +55,9 @@ class Piece:
   def moves(self) -> list[tuple[int, int]]:
     raise NotImplementedError("The parent piece class can not move")
 
+  def my_king(self) -> any:
+    return self.board.get_piece("K") if self.color == WHITE else self.board.get_piece("k")
+
 
 class King(Piece):
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
@@ -127,14 +130,13 @@ class King(Piece):
       if self.board.is_valid_pos(possible_pos) and isinstance(self.board.lookup(possible_pos), Knight):
         checks.append(self.board.lookup(possible_pos))
 
-
     # Checking for check by pawn
     vertical_direction = -1 if self.get_color() == "W" else 1
 
     # Capture moves (diagonal)
     diagonal_moves = [
-      (curr_pos[0] + vertical_direction, curr_pos[1] - 1),
-      (curr_pos[0] + vertical_direction, curr_pos[1] + 1)
+        (curr_pos[0] + vertical_direction, curr_pos[1] - 1),
+        (curr_pos[0] + vertical_direction, curr_pos[1] + 1)
     ]
 
     for move in diagonal_moves:
@@ -224,14 +226,13 @@ class Knight(Piece):
     return "N" if self.get_color() == WHITE else "n"
 
   def moves(self) -> list[tuple[int, int]]:
-    my_king = self.board.get_piece("K") if self.color == WHITE else self.board.get_piece("k")
-    if my_king is None:
+    my_king = self.my_king()
+    if my_king == None:
       return []
-    legal_moves = []
-    my_king.checks_and_pins()
-    checks = my_king.checks
-    pins = my_king.pins
+    checks = my_king.get_checks()
+    pins = my_king.get_pins()
 
+    # Knight can never move if pinned
     if len(checks) == 2 or self in pins:
       return []
     elif len(checks) == 1:
@@ -240,16 +241,10 @@ class Knight(Piece):
       check_pos = checks[0].get_pos()
 
       check_blocks = check_line(king_pos, check_pos)
-
-      for move in possible_moves:
-        if move in check_blocks:
-          legal_moves.append(move)
-
-      return legal_moves
+      moves = [move for move in possible_moves if move in check_blocks]
+      return moves
     else:
       return self.possible_moves()
-
-
 
 
 class Pawn(Piece):
@@ -259,7 +254,7 @@ class Pawn(Piece):
   def __str__(self) -> str:
     return "P" if self.get_color() == WHITE else "p"
 
-  def possible_moves(self, sliding=False):
+  def possible_moves(self):
     moves = []
     curr_pos = self.get_pos()
     forward_d = -1 if self.get_color() == WHITE else 1
@@ -275,18 +270,87 @@ class Pawn(Piece):
       if self.board.is_valid_pos(new_pos) and not self.board.is_empty_pos(new_pos) and self.board.lookup(new_pos).get_color() != self.get_color():
         moves.append(new_pos)
 
-    return moves
+    return
+
+  def moves(self):
+    my_king = self.my_king()
+    if my_king == None:
+      return []
+    checks = my_king.get_checks()
+    pins = my_king.get_pins()
+
+    if len(checks) == 2 or (len(checks) == 1 and self in pins):
+      return []
+    elif len(checks) == 1:
+      possible_moves = self.possible_moves()
+      king_pos = my_king.get_pos()
+      check_pos = checks[0].get_pos()
+
+      check_blocks = check_line(king_pos, check_pos)
+      moves = [move for move in possible_moves if move in check_blocks]
+      return moves
+    elif self in pins:
+      if pins[self][0] != "v":
+        return []
+      curr_pos = self.get_pos()
+
+      forward_d = -1 if self.get_color() == WHITE else 1
+
+      # Forward
+      new_pos = (curr_pos[0] + forward_d, curr_pos[1])
+      if self.board.is_valid_pos(new_pos) and self.board.is_empty_pos(new_pos):
+        moves.append(new_pos)
+
+    else:
+      return self.possible_moves()
 
 
-class Sliding_Piece(Piece):
+class SlidingPiece(Piece):
   def __init__(self, color: int, pos: tuple[int, int], board: Board):
     super().__init__(color, pos, board)
 
   def possible_moves(self, sliding=True):
     return super().possible_moves(sliding)
 
+  def moves(self) -> list[tuple[int, int]]:
+    my_king = self.my_king()
+    if my_king == None:
+      return []
+    checks = my_king.get_checks()
+    pins = my_king.get_pins()
 
-class Queen(Sliding_Piece):
+    if len(checks) == 2 or (len(checks) == 1 and self in pins):
+      return []
+    elif len(checks) == 1:
+      possible_moves = self.possible_moves()
+      king_pos = my_king.get_pos()
+      check_pos = checks[0].get_pos()
+      check_blocks = check_line(king_pos, check_pos)
+      moves = [move for move in possible_moves if move in check_blocks]
+      return moves
+    elif self in pins:
+      curr_pos = self.get_pos()
+      pinner_pos = pins[self][1]
+
+      if len(self.offsets == 8):
+        return pin_line(curr_pos, pinner_pos)
+
+      else:
+        piece_type = "vh" if self.offsets[0][0] * \
+            self.offsets[0][1] == 0 else "d"
+        pin_type = pins[self][0]
+
+        if ((pin_type == "v" or pin_type == "h") and piece_type == "vh") or \
+                (pin_type == "d" and piece_type == "d"):
+          return pin_line(curr_pos, pinner_pos)
+        else:
+          return []
+
+    else:
+      return self.possible_moves()
+
+
+class Queen(SlidingPiece):
 
   def __init__(self, color: int, pos: tuple[int, int], board: Board):
     super().__init__(color, pos, board)
@@ -297,7 +361,7 @@ class Queen(Sliding_Piece):
     return "Q" if self.get_color() == WHITE else "q"
 
 
-class Rook(Sliding_Piece):
+class Rook(SlidingPiece):
   MOVE_OFFSETS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
@@ -308,7 +372,7 @@ class Rook(Sliding_Piece):
     return "R" if self.get_color() == WHITE else "r"
 
 
-class Bishop(Sliding_Piece):
+class Bishop(SlidingPiece):
   MOVE_OFFSETS = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
 
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
