@@ -197,7 +197,14 @@ class King(Piece):
   def moves(self) -> list[tuple[int, int]]:
     """
     Doctest:
-    >>>
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 0), board)
+    >>> k = King(BLACK, (4, 1), board)
+    >>> board.place((0, 0), R)
+    >>> board.place((4, 1), k)
+    >>> set(k.moves()) == set([(4, 2), (3, 2), (3, 1)])
+    True
+
     """
     curr_pos = self.get_pos()
     moves = []
@@ -207,8 +214,9 @@ class King(Piece):
       possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
       if not self.board.is_valid_pos(possible_pos):
         continue
-      elif self.board.lookup(possible_pos) is None and not self.is_pos_attacked(possible_pos):
-        moves.append(possible_pos)
+      elif self.board.lookup(possible_pos) is None:
+        if not self.is_pos_attacked(possible_pos):
+          moves.append(possible_pos)
       elif self.board.lookup(possible_pos).get_color() == opponent_color and not self.is_pos_attacked(possible_pos):
         moves.append(possible_pos)
 
@@ -227,7 +235,7 @@ class Knight(Piece):
 
   def moves(self) -> list[tuple[int, int]]:
     my_king = self.my_king()
-    if my_king == None:
+    if my_king is None:
       return []
     checks = my_king.get_checks()
     pins = my_king.get_pins()
