@@ -23,7 +23,10 @@ class Game:
         self.board.remove(new_pos)
         self.board.place(new_pos)
 
+
   def make_piece(self, fen_char: str, pos: List[int]) -> None:
+
+  def make_piece(self, fen_char: str, pos: tuple[int]) -> None:
     mapping = {
         'p': lambda: Pawn(0, pos, self.board),
         'r': lambda: Rook(0, pos, self.board),
