@@ -268,7 +268,7 @@ def check_line(king_pos: tuple[int, int], checker_pos: tuple[int, int]) -> list[
   curr_pos = checker_pos
 
   while curr_pos != checker_pos:
-    curr_pos = (curr_pos[0] + vector[0], curr_pos[1] + vector[1])
+    curr_pos = (int(curr_pos[0] + vector[0]), int(curr_pos[1] + vector[1]))
     pin_line.append(curr_pos)
 
   return pin_line
@@ -287,7 +287,7 @@ def pin_line(pin_pos: tuple[int, int], pinner_pos: tuple[int, int]) -> list[tupl
   curr_pos = pin_pos
 
   while curr_pos != pinner_pos:
-    curr_pos = (curr_pos[0] + vector[0], curr_pos[1] + vector[1])
+    curr_pos = (int(curr_pos[0] + vector[0]), int(curr_pos[1] + vector[1]))
     pin_line.append(curr_pos)
 
   return pin_line
