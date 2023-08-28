@@ -1,4 +1,3 @@
-from typing import *
 from board import Board
 WHITE, BLACK = 0, 1
 
@@ -60,9 +59,14 @@ class King(Piece):
     super().__init__(color, pos, board)
     self.offsets = [(1, 0), (0, 1), (-1, 0), (0, -1),
                     (1, 1), (1, -1), (-1, 1), (-1, -1)]
+    self.checks = []
+    self.pins = {}
 
   def __str__(self) -> str:
     return "K" if self.get_color() == WHITE else "k"
+
+  def checks_and_pins(self) -> None:
+    raise NotImplementedError
 
 
 class Knight(Piece):
@@ -83,7 +87,7 @@ class Pawn(Piece):
   def __str__(self) -> str:
     return "P" if self.get_color() == WHITE else "p"
 
-  def possible_moves(self):
+  def possible_moves(self, sliding=False):
     moves = []
     curr_pos = self.get_pos()
     forward_d = -1 if self.get_color() == WHITE else 1
@@ -106,8 +110,8 @@ class Sliding_Piece(Piece):
   def __init__(self, color: int, pos: tuple[int, int], board: Board):
     super().__init__(color, pos, board)
 
-  def possible_moves(self):
-    return super().possible_moves(sliding=True)
+  def possible_moves(self, sliding=True):
+    return super().possible_moves(sliding)
 
 
 class Queen(Sliding_Piece):
