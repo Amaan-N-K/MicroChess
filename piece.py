@@ -242,7 +242,7 @@ class Pawn(Piece):
       return self.possible_moves()
 
 
-class Sliding_Piece(Piece):
+class SlidingPiece(Piece):
   def __init__(self, color: int, pos: tuple[int, int], board: Board):
     super().__init__(color, pos, board)
 
@@ -287,7 +287,7 @@ class Sliding_Piece(Piece):
       return self.possible_moves()
 
 
-class Queen(Sliding_Piece):
+class Queen(SlidingPiece):
 
   def __init__(self, color: int, pos: tuple[int, int], board: Board):
     super().__init__(color, pos, board)
@@ -298,7 +298,7 @@ class Queen(Sliding_Piece):
     return "Q" if self.get_color() == WHITE else "q"
 
 
-class Rook(Sliding_Piece):
+class Rook(SlidingPiece):
   MOVE_OFFSETS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
@@ -309,7 +309,7 @@ class Rook(Sliding_Piece):
     return "R" if self.get_color() == WHITE else "r"
 
 
-class Bishop(Sliding_Piece):
+class Bishop(SlidingPiece):
   MOVE_OFFSETS = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
 
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
