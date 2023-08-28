@@ -7,32 +7,19 @@ class Board:
     self.row_size = row_size
     self.col_size = col_size
 
-  def is_valid_pos(self, pos: List[int]) -> bool:
+  def is_valid_pos(self, pos: tuple[int, int]) -> bool:
     return 0 <= self.row_size < pos[0] and 0 <= self.col_size < pos[1]
 
-  def is_empty_pos(self, pos: List[int]) -> bool:
-    return self.board[pos[0]][pos[1]] == None
+  def is_empty_pos(self, pos: tuple[int, int]) -> bool:
+    return self.board[pos[0]][pos[1]] is None
 
-  def place(self, pos: List[int], piece: any) -> None:
+  def place(self, pos: tuple[int, int], piece: any) -> None:
     self.board[pos[0]][pos[1]] = piece
 
-  def remove(self, pos: List[int]) -> None:
+  def remove(self, pos: tuple[int, int]) -> None:
     self.board[pos[0]][pos[1]] = None
 
-  def lookup(self, pos: List[int]) -> None:
-  def is_valid_pos(self, pos: tuple[int]) -> bool:
-    return 0 <= pos[0] < self.row_size and 0 <= pos[1] < self.col_size
-
-  def is_empty_pos(self, pos: tuple[int]) -> bool:
-    return self.board[pos[0]][pos[1]] == None
-
-  def place(self, pos: tuple[int], piece: any) -> None:
-    self.board[pos[0]][pos[1]] = piece
-
-  def remove(self, pos: tuple[int]) -> None:
-    self.board[pos[0]][pos[1]] = None
-
-  def lookup(self, pos: tuple[int]) -> Optional[any]:
+  def lookup(self, pos: tuple[int, int]) -> Optional[any]:
     return self.board[pos[0]][pos[1]]
 
   def __str__(self) -> str:
