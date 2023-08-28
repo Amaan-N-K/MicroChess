@@ -6,12 +6,20 @@ class Board:
     self.board = [[None for _ in range(col_size)] for _ in range(row_size)]
     self.row_size = row_size
     self.col_size = col_size
+    self.pieces = dict()
 
   def is_valid_pos(self, pos: tuple[int, int]) -> bool:
     return 0 <= pos[0] < self.row_size and 0 <= pos[1] < self.col_size
 
   def is_empty_pos(self, pos: tuple[int, int]) -> bool:
     return self.board[pos[0]][pos[1]] is None
+
+  def add_piece(self, piece: any) -> None:
+    self.pieces.setdefault(str(piece), []).append(piece)
+
+  def forget_piece(self, piece: any) -> None:
+    self.pieces[str(piece)] = [p for p in self.pieces.get(
+        str(piece), []) if p != piece]
 
   def place(self, pos: tuple[int, int], piece: any) -> None:
     self.board[pos[0]][pos[1]] = piece

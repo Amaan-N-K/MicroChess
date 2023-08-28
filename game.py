@@ -54,4 +54,5 @@ class Game:
         else:
           piece = self.make_piece(c, (row_idx, col_idx))
           self.board.place((row_idx, col_idx), piece)
+          self.board.add_piece(piece)
           col_idx += 1
