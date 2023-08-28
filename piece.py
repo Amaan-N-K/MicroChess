@@ -150,31 +150,53 @@ class King(Piece):
       self.pins = pins
 
   def is_pos_attacked(self, pos: tuple[int, int]) -> bool:
-
+    """
+    Doctest:
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 0), board)
+    >>> k = King(BLACK, (4, 1), board)
+    >>> board.place((0, 0), R)
+    >>> board.place((4, 1), k)
+    >>> k.is_pos_attacked((4, 0))
+    True
+    >>> board = Board(5, 4)
+    >>> k = King(BLACK, (4, 1), board)
+    >>> P = Pawn(WHITE, (3, 1), board)
+    >>> board.place((4, 1), k)
+    >>> board.place((3, 1), P)
+    >>> k.is_pos_attacked((4, 0))
+    True
+    """
     for offset in self.offsets:
       next_pos = (pos[0] + offset[0], pos[1] + offset[1])
       while self.board.is_valid_pos(next_pos):
-        piece = self.board.lookup(pos)
-        if piece.get_color() == self.get_color():
-          return False
+        piece = self.board.lookup(next_pos)
+        if not piece: next_pos = (next_pos[0] + offset[0], next_pos[1] + offset[1])
+        elif piece.get_color() == self.get_color(): break
         else:
-          if offset[0] * offset[1] == 0 and isinstance(piece, Rook) or isinstance(piece, Queen):
+          if offset[0] * offset[1] == 0 and (isinstance(piece, Rook) or isinstance(piece, Queen)):
             return True
-          elif offset[0] * offset[1] == 1 and  isinstance(piece, Bishop) or isinstance(piece, Queen):
+          if abs(offset[0] * offset[1]) == 1 and (isinstance(piece, Bishop) or isinstance(piece, Queen)):
             return True
-          elif offset[0] * offset[1] == 1 and (next_pos[0]-offset[0], next_pos[1]-offset[0]) == pos:
+          if abs(offset[0] * offset[1] == 1) and (next_pos[0] - offset[0], next_pos[1] - offset[0]) == pos:
             return True
-          else:
-            next_pos = (next_pos[0] + offset[0], next_pos[1] + offset[1])
 
     for offset in Knight.MOVE_OFFSETS:
       next_pos = (pos[0] + offset[0], pos[1] + offset[1])
-      if pos == next_pos:
+      if self.board.is_valid_pos(next_pos):
+        piece = self.board.lookup(next_pos)
+      else:
+        continue
+      if piece is not None and isinstance(piece, Knight):
         return True
 
     return False
 
   def moves(self) -> list[tuple[int, int]]:
+    """
+    Doctest:
+    >>>
+    """
     curr_pos = self.get_pos()
     moves = []
     opponent_color = BLACK if self.get_color() == WHITE else WHITE
