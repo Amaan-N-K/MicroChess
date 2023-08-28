@@ -33,6 +33,10 @@ class Board:
   def lookup(self, pos: tuple[int, int]) -> Optional[any]:
     return self.board[pos[0]][pos[1]]
 
+  def add_piece_place_piece(self, pos: tuple[int, int], piece: any):
+    self.place(pos, piece)
+    self.add_piece(piece)
+
   def __str__(self) -> str:
     """Converts board state to FEN string for pieces only and expects pieces to have __str__ defined
 

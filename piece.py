@@ -55,7 +55,7 @@ class Piece:
     raise NotImplementedError("The parent piece class can not move")
 
   def my_king(self) -> any:
-    return self.board.get_piece("K") if self.color == WHITE else self.board.get_piece("k")
+    return self.board.get_piece("K")[0] if self.color == WHITE else self.board.get_piece("k")[0]
 
 
 class King(Piece):
@@ -68,6 +68,12 @@ class King(Piece):
 
   def __str__(self) -> str:
     return "K" if self.get_color() == WHITE else "k"
+
+  def get_checks(self) -> list[tuple[int, int]]:
+    return self.checks
+
+  def get_pins(self) -> dict:
+    return self.pins
 
   def checks_and_pins(self) -> None:
     curr_pos = self.get_pos()
@@ -236,6 +242,30 @@ class Knight(Piece):
     return "N" if self.get_color() == WHITE else "n"
 
   def moves(self) -> list[tuple[int, int]]:
+    """
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 1), board)
+    >>> k = King(BLACK, (4, 1), board)
+    >>> n = Knight(BLACK, (4, 2), board)
+    >>> board.add_piece_place_piece((0, 1), R)
+    >>> board.add_piece_place_piece((4, 1), k)
+    >>> board.add_piece_place_piece((3, 1), n)
+    >>> k.checks_and_pins()
+    >>> n.moves()
+    []
+
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 1), board)
+    >>> k = King(BLACK, (1, 3), board)
+    >>> n = Knight(BLACK, (4, 2), board)
+    >>> board.add_piece_place_piece((0, 1), R)
+    >>> board.add_piece_place_piece((4, 1), k)
+    >>> board.add_piece_place_piece((1, 3), n)
+    >>> k.checks_and_pins()
+    >>> set(n.moves()) == {(0, 1), (2, 1)}
+    True
+
+    """
     my_king = self.my_king()
     if my_king is None:
       return []
@@ -243,6 +273,7 @@ class Knight(Piece):
     pins = my_king.get_pins()
 
     # Knight can never move if pinned
+
     if len(checks) == 2 or self in pins:
       return []
     elif len(checks) == 1:
@@ -283,6 +314,34 @@ class Pawn(Piece):
     return moves
 
   def moves(self):
+    """
+    pin test
+
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 1), board)
+    >>> k = King(BLACK, (4, 1), board)
+    >>> p = Knight(BLACK, (3, 1), board)
+    >>> board.add_piece_place_piece((0, 1), R)
+    >>> board.add_piece_place_piece((4, 1), k)
+    >>> board.add_piece_place_piece((3, 1), p)
+    >>> k.checks_and_pins()
+    >>> set(p.moves()) == {(2, 1), (1, 1)}
+    True
+
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (3, 1), board)
+    >>> k = King(BLACK, (4, 1), board)
+    >>> p = Knight(BLACK, (4, 2), board)
+    >>> board.add_piece_place_piece((3, 1), R)
+    >>> board.add_piece_place_piece((4, 1), k)
+    >>> board.add_piece_place_piece((4, 2), p)
+    >>> k.checks_and_pins()
+    >>> p.moves() == [(3, 1)]
+    True
+
+
+
+    """
     my_king = self.my_king()
     if my_king == None:
       return []
