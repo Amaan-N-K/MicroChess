@@ -76,6 +76,18 @@ class King(Piece):
     return self.pins
 
   def checks_and_pins(self) -> None:
+    """
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 1), board)
+    >>> k = King(BLACK, (1, 3), board)
+    >>> n = Knight(BLACK, (4, 2), board)
+    >>> board.add_piece_place_piece((0, 1), R)
+    >>> board.add_piece_place_piece((4, 1), k)
+    >>> board.add_piece_place_piece((1, 3), n)
+    >>> k.checks_and_pins()
+    >>> isinstance(k.get_checks()[0], Rook)
+    True
+    """
     curr_pos = self.get_pos()
     checks = []
     pins = {}
