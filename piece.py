@@ -76,6 +76,18 @@ class King(Piece):
     return self.pins
 
   def checks_and_pins(self) -> None:
+    """
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 1), board)
+    >>> k = King(BLACK, (1, 3), board)
+    >>> n = Knight(BLACK, (4, 2), board)
+    >>> board.add_piece_place_piece((0, 1), R)
+    >>> board.add_piece_place_piece((4, 1), k)
+    >>> board.add_piece_place_piece((1, 3), n)
+    >>> k.checks_and_pins()
+    >>> isinstance(k.get_checks()[0], Rook)
+    True
+    """
     curr_pos = self.get_pos()
     checks = []
     pins = {}
@@ -89,7 +101,7 @@ class King(Piece):
         piece_at_cell = self.board.lookup(possible_pos)
 
         if piece_at_cell is None:
-          possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
+          possible_pos = (possible_pos[0] + offset[0], possible_pos[1] + offset[1])
 
         # If king's teammate is blocking him
         elif piece_at_cell.get_color() == self.get_color():
@@ -104,11 +116,10 @@ class King(Piece):
           if len(shields) > 1:
             break
           else:
-            possible_pos[0] += offset[0]
-            possible_pos[1] += offset[1]
+            possible_pos = (possible_pos[0] + offset[0], possible_pos[1] + offset[1])
 
         # Checking for horizontal/vertical (ex. (1 * 0) => 0)) and not same color
-        elif (offset[0] * offset[1] == 0) and (isinstance(piece_at_cell, Rook) or isinstance(piece_at_cell, Rook)):
+        elif (offset[0] * offset[1] == 0) and (isinstance(piece_at_cell, Rook) or isinstance(piece_at_cell, Queen)):
           if len(shields) == 1:
             pins[shields[0][0]] = (shields[0][1], piece_at_cell.get_pos())
           else:
@@ -116,7 +127,7 @@ class King(Piece):
           break
 
         # Checking for diagonal (ex. (1 * 1) => 1)) and not same color
-        elif (offset[0] * offset[1] != 0) and (isinstance(piece_at_cell, Bishop) or isinstance(piece_at_cell, Rook)):
+        elif (offset[0] * offset[1] != 0) and (isinstance(piece_at_cell, Bishop) or isinstance(piece_at_cell, Queen)):
           if len(shields) == 1:
             pins[shields[0][0]] = (shields[0][1], piece_at_cell.get_pos())
           else:
@@ -209,7 +220,7 @@ class King(Piece):
     >>> k = King(BLACK, (4, 1), board)
     >>> board.place((0, 0), R)
     >>> board.place((4, 1), k)
-    >>> set(k.moves()) == set([(4, 2), (3, 2), (3, 1)])
+    >>> set(k.moves()) == {(4, 2), (3, 2), (3, 1)}
     True
 
     """
@@ -272,6 +283,7 @@ class Knight(Piece):
     checks = my_king.get_checks()
     pins = my_king.get_pins()
 
+    print(checks)
     # Knight can never move if pinned
 
     if len(checks) == 2 or self in pins:
@@ -280,9 +292,13 @@ class Knight(Piece):
       possible_moves = self.possible_moves()
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
-
       check_blocks = check_line(king_pos, check_pos)
-      moves = [move for move in possible_moves if move in check_blocks]
+      print(possible_moves)
+
+      moves = []
+      for move in possible_moves:
+        if move in check_blocks:
+          moves.append(move)
       return moves
     else:
       return self.possible_moves()
