@@ -148,40 +148,6 @@ class King(Piece):
       self.checks = checks
       self.pins = pins
 
-  def _check_line(self, king_pos: tuple[int, int], checker_pos: tuple[int, int]) -> list[tuple[int, int]]:
-    vector = (checker_pos[0] - king_pos[0], checker_pos[1] - king_pos[1])
-    if vector[0] != 0:
-      vector = (vector[0] / abs(vector[0]), vector[1])
-    if vector[1] != 0:
-      vector = (vector[0], vector[1] / abs(vector[1]))
-
-    pin_line = []
-
-    curr_pos = checker_pos
-
-    while curr_pos != checker_pos:
-      curr_pos = (curr_pos[0] + vector[0], curr_pos[1] + vector[1])
-      pin_line.append(curr_pos)
-
-    return pin_line
-
-  def _pin_line(self, pin_pos: tuple[int, int], pinner_pos: tuple[int, int]) -> list[tuple[int, int]]:
-    vector = (pinner_pos[0] - pin_pos[0], pinner_pos[1] - pin_pos[1])
-    if vector[0] != 0:
-      vector = (vector[0] / abs(vector[0]), vector[1])
-    if vector[1] != 0:
-      vector = (vector[0], vector[1] / abs(vector[1]))
-
-    pin_line = []
-
-    curr_pos = pin_pos
-
-    while curr_pos != pinner_pos:
-      curr_pos = (curr_pos[0] + vector[0], curr_pos[1] + vector[1])
-      pin_line.append(curr_pos)
-
-    return pin_line
-
 
 class Knight(Piece):
   MOVE_OFFSETS = [(1, 2), (1, -2), (-1, 2), (-1, -2),
@@ -198,7 +164,7 @@ class Knight(Piece):
     my_king = self.board.get_piece("K") if self.color == WHITE else self.board.get_piece("k")
     if my_king is None:
       return []
-
+    legal_moves = []
     my_king.checks_and_pins()
     checks = my_king.checks
     pins = my_king.pins
@@ -206,11 +172,11 @@ class Knight(Piece):
     if len(checks) == 2 or self in pins:
       return []
     elif len(checks) == 1:
-      possible_moves = self.possible_legal_moves(board)
+      possible_moves = self.possible_moves()
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
 
-      check_blocks = self._check_line(king_pos, check_pos)
+      check_blocks = check_line(king_pos, check_pos)
 
       for move in possible_moves:
         if move in check_blocks:
@@ -218,7 +184,7 @@ class Knight(Piece):
 
       return legal_moves
     else:
-      return self.possible_legal_moves(board)
+      return self.possible_moves()
 
 
 
@@ -288,3 +254,40 @@ class Bishop(Sliding_Piece):
 
   def __str__(self) -> str:
     return "B" if self.get_color() == WHITE else "b"
+
+
+def check_line(king_pos: tuple[int, int], checker_pos: tuple[int, int]) -> list[tuple[int, int]]:
+  vector = (checker_pos[0] - king_pos[0], checker_pos[1] - king_pos[1])
+  if vector[0] != 0:
+    vector = (vector[0] / abs(vector[0]), vector[1])
+  if vector[1] != 0:
+    vector = (vector[0], vector[1] / abs(vector[1]))
+
+  pin_line = []
+
+  curr_pos = checker_pos
+
+  while curr_pos != checker_pos:
+    curr_pos = (curr_pos[0] + vector[0], curr_pos[1] + vector[1])
+    pin_line.append(curr_pos)
+
+  return pin_line
+
+
+def pin_line(pin_pos: tuple[int, int], pinner_pos: tuple[int, int]) -> list[tuple[int, int]]:
+  vector = (pinner_pos[0] - pin_pos[0], pinner_pos[1] - pin_pos[1])
+
+  if vector[0] != 0:
+    vector = (vector[0] / abs(vector[0]), vector[1])
+  if vector[1] != 0:
+    vector = (vector[0], vector[1] / abs(vector[1]))
+
+  pin_line = []
+
+  curr_pos = pin_pos
+
+  while curr_pos != pinner_pos:
+    curr_pos = (curr_pos[0] + vector[0], curr_pos[1] + vector[1])
+    pin_line.append(curr_pos)
+
+  return pin_line
