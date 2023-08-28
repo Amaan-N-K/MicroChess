@@ -3,7 +3,6 @@ from board import Board
 WHITE, BLACK = 0, 1
 
 
-
 class Piece:
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
     self.color = color
@@ -180,6 +179,8 @@ class King(Piece):
             return True
           if abs(offset[0] * offset[1]) == 1 and (isinstance(piece, Bishop) or isinstance(piece, Queen)):
             return True
+          elif offset[0] * offset[1] == 1 and isinstance(piece, Bishop) or isinstance(piece, Queen):
+            return True
           if abs(offset[0] * offset[1] == 1) and (next_pos[0] - offset[0], next_pos[1] - offset[0]) == pos:
             return True
 
@@ -221,6 +222,7 @@ class King(Piece):
         moves.append(possible_pos)
 
     return moves
+
 
 class Knight(Piece):
   MOVE_OFFSETS = [(1, 2), (1, -2), (-1, 2), (-1, -2),
@@ -278,7 +280,7 @@ class Pawn(Piece):
       if self.board.is_valid_pos(new_pos) and not self.board.is_empty_pos(new_pos) and self.board.lookup(new_pos).get_color() != self.get_color():
         moves.append(new_pos)
 
-    return
+    return moves
 
   def moves(self):
     my_king = self.my_king()
@@ -295,19 +297,27 @@ class Pawn(Piece):
       check_pos = checks[0].get_pos()
 
       check_blocks = check_line(king_pos, check_pos)
-      moves = [move for move in possible_moves if move in check_blocks]
-      return moves
+      return [move for move in possible_moves if move in check_blocks]
+
     elif self in pins:
-      if pins[self][0] != "v":
+      if pins[self][0] == "h":
         return []
-      curr_pos = self.get_pos()
 
-      forward_d = -1 if self.get_color() == WHITE else 1
+      elif pins[self][0] == "v":
+        curr_pos = self.get_pos()
 
-      # Forward
-      new_pos = (curr_pos[0] + forward_d, curr_pos[1])
-      if self.board.is_valid_pos(new_pos) and self.board.is_empty_pos(new_pos):
-        moves.append(new_pos)
+        forward_d = -1 if self.get_color() == WHITE else 1
+
+        # Forward
+        new_pos = (curr_pos[0] + forward_d, curr_pos[1])
+        if self.board.is_valid_pos(new_pos) and self.board.is_empty_pos(new_pos):
+          return [new_pos]
+
+      # Check if can capture diagonal pinner
+      else:
+        possible_moves = self.possible_moves()
+        pin_moves = pin_line(self.get_pos(), pins[self][1])
+        return [move for move in possible_moves if move in pin_moves]
 
     else:
       return self.possible_moves()
