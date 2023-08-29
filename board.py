@@ -6,7 +6,7 @@ class Board:
     self.board = [[None for _ in range(col_size)] for _ in range(row_size)]
     self.row_size = row_size
     self.col_size = col_size
-    self.pieces = dict()
+    self.pieces = {}
 
   def is_valid_pos(self, pos: tuple[int, int]) -> bool:
     return 0 <= pos[0] < self.row_size and 0 <= pos[1] < self.col_size

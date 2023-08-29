@@ -188,17 +188,19 @@ class King(Piece):
       next_pos = (pos[0] + offset[0], pos[1] + offset[1])
       while self.board.is_valid_pos(next_pos):
         piece = self.board.lookup(next_pos)
-        if not piece: next_pos = (next_pos[0] + offset[0], next_pos[1] + offset[1])
+        if piece is None: next_pos = (next_pos[0] + offset[0], next_pos[1] + offset[1])
         elif piece.get_color() == self.get_color(): break
         else:
-          if offset[0] * offset[1] == 0 and (isinstance(piece, Rook) or isinstance(piece, Queen)):
+          if offset[0] * offset[1] == 0 and (isinstance(piece, Rook) or isinstance(piece, Queen) or isinstance(piece, King)):
             return True
-          if abs(offset[0] * offset[1]) == 1 and (isinstance(piece, Bishop) or isinstance(piece, Queen)):
+          elif abs(offset[0] * offset[1]) == 1 and (isinstance(piece, Bishop) or isinstance(piece, Queen)) or isinstance(piece, King):
             return True
           elif offset[0] * offset[1] == 1 and isinstance(piece, Bishop) or isinstance(piece, Queen):
             return True
-          if abs(offset[0] * offset[1] == 1) and (next_pos[0] - offset[0], next_pos[1] - offset[0]) == pos:
+          elif abs(offset[0] * offset[1] == 1) and (next_pos[0] - offset[0], next_pos[1] - offset[0]) == pos:
             return True
+          else:
+            break
 
     for offset in Knight.MOVE_OFFSETS:
       next_pos = (pos[0] + offset[0], pos[1] + offset[1])
@@ -226,7 +228,6 @@ class King(Piece):
     curr_pos = self.get_pos()
     moves = []
     opponent_color = BLACK if self.get_color() == WHITE else WHITE
-
     for offset in self.offsets:
       possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
       if not self.board.is_valid_pos(possible_pos):
