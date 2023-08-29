@@ -6,7 +6,7 @@ class Board:
     self.board = [[None for _ in range(col_size)] for _ in range(row_size)]
     self.row_size = row_size
     self.col_size = col_size
-    self.pieces = dict()
+    self.pieces = {}
 
   def is_valid_pos(self, pos: tuple[int, int]) -> bool:
     return 0 <= pos[0] < self.row_size and 0 <= pos[1] < self.col_size
@@ -21,6 +21,9 @@ class Board:
     self.pieces[str(piece)] = [p for p in self.pieces.get(
         str(piece), []) if p != piece]
 
+  def get_piece(self, piece: str) -> Optional[any]:
+    return self.pieces.get(piece, None)
+
   def place(self, pos: tuple[int, int], piece: any) -> None:
     self.board[pos[0]][pos[1]] = piece
 
@@ -29,6 +32,10 @@ class Board:
 
   def lookup(self, pos: tuple[int, int]) -> Optional[any]:
     return self.board[pos[0]][pos[1]]
+
+  def add_piece_place_piece(self, pos: tuple[int, int], piece: any):
+    self.place(pos, piece)
+    self.add_piece(piece)
 
   def __str__(self) -> str:
     """Converts board state to FEN string for pieces only and expects pieces to have __str__ defined
