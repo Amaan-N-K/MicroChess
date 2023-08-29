@@ -78,14 +78,14 @@ class King(Piece):
   def checks_and_pins(self) -> None:
     """
     >>> board = Board(5, 4)
-    >>> R = Rook(WHITE, (0, 1), board)
-    >>> k = King(BLACK, (1, 3), board)
-    >>> n = Knight(BLACK, (4, 2), board)
-    >>> board.add_piece_place_piece((0, 1), R)
-    >>> board.add_piece_place_piece((4, 1), k)
-    >>> board.add_piece_place_piece((1, 3), n)
+    >>> R = Rook(WHITE, (0, 0), board)
+    >>> k = King(BLACK, (4, 0), board)
+    >>> n = Knight(BLACK, (3, 2), board)
+    >>> board.add_piece_place_piece((0, 0), R)
+    >>> board.add_piece_place_piece((4, 0), k)
+    >>> board.add_piece_place_piece((3, 2), n)
     >>> k.checks_and_pins()
-    >>> isinstance(k.get_checks()[0], Rook)
+    >>> len(k.checks) == 2
     True
     """
     curr_pos = self.get_pos()
@@ -105,9 +105,9 @@ class King(Piece):
         # If king's teammate is blocking him
         elif piece_at_cell.get_color() == self.get_color():
 
-          if offset[0] == 0:
+          if offset[1] == 0:
             shields.append((piece_at_cell, "v"))
-          elif offset[1] == 0:
+          elif offset[0] == 0:
             shields.append((piece_at_cell, "h"))
           else:
             shields.append((piece_at_cell, "d"))
@@ -329,28 +329,26 @@ class Pawn(Piece):
     pin test
 
     >>> board = Board(5, 4)
-    >>> R = Rook(WHITE, (0, 1), board)
-    >>> k = King(BLACK, (4, 1), board)
-    >>> p = Knight(BLACK, (3, 1), board)
-    >>> board.add_piece_place_piece((0, 1), R)
-    >>> board.add_piece_place_piece((4, 1), k)
-    >>> board.add_piece_place_piece((3, 1), p)
+    >>> R = Rook(WHITE, (4, 1), board)
+    >>> k = King(BLACK, (0, 1), board)
+    >>> p = Pawn(BLACK, (1, 1), board)
+    >>> board.add_piece_place_piece((4, 1), R)
+    >>> board.add_piece_place_piece((0, 1), k)
+    >>> board.add_piece_place_piece((1, 1), p)
     >>> k.checks_and_pins()
-    >>> set(p.moves()) == {(2, 1), (1, 1)}
+    >>> set(p.moves()) == {(2, 1)}
     True
 
     >>> board = Board(5, 4)
-    >>> R = Rook(WHITE, (3, 1), board)
-    >>> k = King(BLACK, (4, 1), board)
-    >>> p = Knight(BLACK, (4, 2), board)
-    >>> board.add_piece_place_piece((3, 1), R)
-    >>> board.add_piece_place_piece((4, 1), k)
-    >>> board.add_piece_place_piece((4, 2), p)
+    >>> R = Rook(WHITE, (1, 1), board)
+    >>> k = King(BLACK, (0, 1), board)
+    >>> p = Pawn(BLACK, (0, 0), board)
+    >>> board.add_piece_place_piece((1, 1), R)
+    >>> board.add_piece_place_piece((0, 1), k)
+    >>> board.add_piece_place_piece((0, 0), p)
     >>> k.checks_and_pins()
-    >>> p.moves() == [(3, 1)]
+    >>> p.moves() == [(1, 1)]
     True
-
-
 
     """
     my_king = self.my_king()
@@ -374,8 +372,8 @@ class Pawn(Piece):
         return []
 
       elif pins[self][0] == "v":
-        curr_pos = self.get_pos()
 
+        curr_pos = self.get_pos()
         forward_d = -1 if self.get_color() == WHITE else 1
 
         # Forward
@@ -401,8 +399,32 @@ class SlidingPiece(Piece):
     return super().possible_moves(sliding)
 
   def moves(self) -> list[tuple[int, int]]:
+    """
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 3), board)
+    >>> k = King(BLACK, (0, 1), board)
+    >>> b = Bishop(BLACK, (0, 2), board)
+    >>> board.add_piece_place_piece((0, 3), R)
+    >>> board.add_piece_place_piece((0, 1), k)
+    >>> board.add_piece_place_piece((0, 2), b)
+    >>> k.checks_and_pins()
+    >>> b.moves() == []
+    True
+
+    >>> board = Board(5, 4)
+    >>> R = Rook(WHITE, (0, 3), board)
+    >>> k = King(BLACK, (0, 1), board)
+    >>> b = Bishop(BLACK, (2, 1), board)
+    >>> board.add_piece_place_piece((0, 3), R)
+    >>> board.add_piece_place_piece((0, 1), k)
+    >>> board.add_piece_place_piece((2, 1), b)
+    >>> k.checks_and_pins()
+    >>> b.moves() == [(0, 3)]
+    True
+
+    """
     my_king = self.my_king()
-    if my_king == None:
+    if my_king is None:
       return []
     checks = my_king.get_checks()
     pins = my_king.get_pins()
@@ -420,7 +442,7 @@ class SlidingPiece(Piece):
       curr_pos = self.get_pos()
       pinner_pos = pins[self][1]
 
-      if len(self.offsets == 8):
+      if len(self.offsets) == 8:
         return pin_line(curr_pos, pinner_pos)
 
       else:
