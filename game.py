@@ -18,6 +18,7 @@ class Game:
     while True:
       for p in self.players:
         p.my_king()[0].checks_and_pins()
+        print(p.color)
         game_state = self.is_game_over(p.color)
         if game_state[0]:
           return game_state[1]
@@ -103,7 +104,7 @@ class Game:
   def is_game_over(self, color) -> list:
     if color == WHITE:
       all_moves = self.all_moves_by_color(WHITE)
-      if len(all_moves) == 0 and len(self.board.pieces["K"][0].moves()) > 1:
+      if len(all_moves) == 0 and len(self.board.pieces["K"][0].get_checks()) >= 1:
         return [True, 'White Wins']
       elif len(all_moves) == 0:
         return [True, 'Draw']
@@ -111,7 +112,7 @@ class Game:
         return [False]
     else:
       all_moves = self.all_moves_by_color(BLACK)
-      if len(all_moves) == 0 and len(self.board.pieces["K"][0].moves()) > 1:
+      if len(all_moves) == 0 and len(self.board.pieces["k"][0].get_checks()) >= 1:
         return [True, 'Black Wins']
       elif len(all_moves) == 0:
         return [True, 'Draw']
