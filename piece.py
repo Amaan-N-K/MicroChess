@@ -353,7 +353,7 @@ class Pawn(Piece):
 
     """
     my_king = self.my_king()
-    if my_king == None:
+    if my_king is None:
       return []
     checks = my_king.get_checks()
     pins = my_king.get_pins()
@@ -381,6 +381,8 @@ class Pawn(Piece):
         new_pos = (curr_pos[0] + forward_d, curr_pos[1])
         if self.board.is_valid_pos(new_pos) and self.board.is_empty_pos(new_pos):
           return [new_pos]
+        else:
+          return []
 
       # Check if can capture diagonal pinner
       else:

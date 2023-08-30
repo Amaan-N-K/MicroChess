@@ -1,6 +1,5 @@
 from board import Board
 from evaluate import *
-from math import inf
 
 WHITE, BLACK = 0, 1
 
@@ -100,54 +99,77 @@ class MinimaxAgent(Agent):
     self.board.add_piece(curr_pos_piece)
     curr_pos_piece.set_pos(curr_pos)
 
-  def minimax(self, all_moves_by_color_dict, depth: int, isWhite: bool) -> tuple:
-    white_moves = all_moves_by_color_dict(WHITE)
-    black_moves = all_moves_by_color_dict(BLACK)
-    white_king = self.board.get("K")[0]
-    black_king = self.board.get("k")[0]
+  def minimax(self, move_func, depth: int, is_white: bool) -> tuple:
+    self.board.print_board()
+    print('##############')
+    print('1')
+    white_moves = move_func(self.board, WHITE)
+    print('2')
+    black_moves = move_func(self.board, BLACK)
+    print('3')
+    white_king = self.board.get_piece("K")[0]
+    print('4')
+    black_king = self.board.get_piece("k")[0]
     white_king.checks_and_pins()
+    print('5')
     black_king.checks_and_pins()
 
     white_moves_len = sum([len(moves) for moves in white_moves.values()])
     black_moves_len = sum([len(moves) for moves in black_moves.values()])
 
     if depth == 0:
-      return self.eval_func(self.board)
+      return tuple([80008])
 
     # Checkmate
     if white_moves_len == 0 and len(white_king.get_checks() > 0):
-      return -100000000
+      return tuple([-100000000])
     if black_moves_len == 0 and len(black_king.get_checks() > 0):
-      return 100000000
+      return tuple([100000000])
 
     # Draw
-    if isWhite and len(white_moves) == 0:
-      return 0
-    if not isWhite and len(black_moves) == 0:
-      return 0
+    if is_white and len(white_moves) == 0:
+      return tuple([0])
+    if not is_white and len(black_moves) == 0:
+      return tuple([0])
 
-    if isWhite:
+    if is_white:
       evals = []
       for piece in white_moves:
         for move in white_moves[piece]:
-          curr_pos, new_pos = move
-          data = self.apply_move(curr_pos, new_pos)
-          eval_val = self.minimax(all_moves_by_color_dict, depth-1, False)
-          evals.append((eval_val, (curr_pos, new_pos)))
-          self.undo_move(data)
+          data = self.apply_move(piece.get_pos(), move)
+          print(move, piece)
+          eval_val = self.minimax(all_moves_by_color_dict, depth - 1, False)
+          evals.append((eval_val, (piece.get_pos(), move)))
 
-      return max(evals, key=lambda x: x[0])
+          self.undo_move(data)
+      m = max(evals, key=lambda x: x[0])
+      return m
 
     else:
+      print('black')
       evals = []
       for piece in black_moves:
         for move in black_moves[piece]:
-          curr_pos, new_pos = move
-          data = self.apply_move(curr_pos, new_pos)
+          data = self.apply_move(piece.get_pos(), move)
           eval_val = self.minimax(all_moves_by_color_dict, depth - 1, True)
-          evals.append((eval_val, (curr_pos, new_pos)))
+          evals.append((eval_val, (piece.get_pos(), move)))
           self.undo_move(data)
 
       return max(evals, key=lambda x: x[0])
+
+
+def all_moves_by_color_dict(board: Board, color: int) -> dict:
+    all_moves = {}
+    for pieces in board.pieces:
+      if color == BLACK and pieces.islower():
+        for piece in board.pieces[pieces]:
+          print('recursion')
+          all_moves[piece] = piece.moves()
+      if color == WHITE and pieces.isupper():
+        for piece in board.pieces[pieces]:
+          all_moves[piece] = piece.moves()
+
+
+    return all_moves
 
 

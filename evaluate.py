@@ -13,13 +13,38 @@ def basic_eval(board: Board) -> int:
     if piece.lower() in board.pieces:
       black_val += value * len(board.pieces[piece.lower()])
 
-  for piece, scale in piece_move_multiplier.items():
-    if piece.upper() in board.pieces:
-      white_val += sum(len(piece_instance.moves()) *
-                       scale for piece_instance in board.get_piece(piece.upper()))
-    if piece.lower() in board.pieces:
-      black_val += sum(len(piece_instance.moves()) *
-                       scale for piece_instance in board.get_piece(piece.lower()))
+  if 'r' in board.pieces:
+    for rook in board.pieces['r']:
+      black_val -= len(rook.moves()) * 0.2
+  if 'R' in board.pieces:
+    for rook in board.pieces['R']:
+      white_val += len(rook.moves()) * 0.2
+
+  if 'q' in board.pieces:
+    for queen in board.pieces['q']:
+      black_val -= len(queen.moves()) * 0.2
+  if 'Q' in board.pieces:
+    for queen in board.pieces['q']:
+      white_val += len(queen.moves()) * 0.2
+
+
+  if 'n' in board.pieces:
+    for knight in board.pieces['n']:
+      black_val -= len(knight.moves()) * 0.1
+  if 'N' in board.pieces:
+    for knight in board.pieces['N']:
+      white_val += len(knight.moves()) * 0.1
+
+  print('2')
+
+  if 'b' in board.pieces:
+    for bishop in board.pieces['b']:
+      black_val -= len(bishop.moves()) * 0.1
+  if 'B' in board.pieces:
+    for bishop in board.pieces['B']:
+      white_val += len(bishop.moves()) * 0.1
+
+  print('3')
 
   if 'p' in board.pieces:
     for pawn in board.pieces['p']:

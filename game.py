@@ -131,14 +131,4 @@ class Game:
 
     return all_moves
 
-  def all_moves_by_color_dict(self, color: int) -> dict:
-    all_moves = {}
-    for pieces in self.board.pieces:
-      if color == BLACK and pieces.islower():
-        for piece in self.board.pieces[pieces]:
-          all_moves[piece] = piece.moves()
-      elif color == WHITE and pieces.isupper():
-        for piece in self.board.pieces[pieces]:
-          all_moves[piece] = piece.moves()
 
-    return all_moves
