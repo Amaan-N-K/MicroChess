@@ -5,11 +5,13 @@ piece_move_multiplier = {'q': 0.2, 'r': 0.2, 'b': 0.1, 'n': 0.1}
 
 
 def basic_eval(board: Board) -> int:
-  white_val, black_val = 0,
+  white_val, black_val = 0, 0
 
   for piece in piece_vals:
-    white_val += piece_vals[piece] * len(board.pieces[piece.upper()])
-    black_val -= piece_vals[piece] * len(board.pieces[piece])
+    if piece.upper() in board.pieces:
+      white_val += piece_vals[piece] * len(board.pieces[piece.upper()])
+    if piece in board.pieces:
+      black_val -= piece_vals[piece] * len(board.pieces[piece])
 
   for piece in piece_move_multiplier:
     scale = piece_move_multiplier[piece]
@@ -23,28 +25,28 @@ def basic_eval(board: Board) -> int:
 
   if 'p' in board.pieces:
     for pawn in board.pieces['p']:
-      black_piece_value -= pawn.get_pos()[0] * 0.3
+      black_val -= pawn.get_pos()[0] * 0.3
   if 'P' in board.pieces:
     for pawn in board.pieces['P']:
-      white_pieces_value += board.row_size - pawn.get_pos()[0] * 0.3
+      white_val += board.row_size - pawn.get_pos()[0] * 0.3
 
   if 'k' in board.pieces:
     for king in board.pieces['k']:
       king.checks_and_pins()
-      black_piece_value += len(king.get_checks()) + len(king.get_pins())
+      black_val += len(king.get_checks()) + len(king.get_pins())
       king_vector = (king.get_pos()[0] ** 2 + king.get_pos()[1] ** 2) ** 0.5
-      black_piece_value += min(king_vector,
+      black_val += min(king_vector,
                                abs(board.col_size - 1 - king_vector))
   if 'K' in board.pieces:
     for king in board.pieces['K']:
       king.checks_and_pins()
-      white_pieces_value -= len(king.get_checks()) + len(king.get_pins())
+      white_val -= len(king.get_checks()) + len(king.get_pins())
       king_vector = (king.get_pos()[0] ** 2 + king.get_pos()[1] ** 2) ** 0.5
       corner = (board.row_size - 1 ** 2 + board.col_size - 1 ** 2)
-      white_pieces_value -= min(abs(corner - king_vector),
+      white_val -= min(abs(corner - king_vector),
                                 abs(board.row_size - 1 - king_vector))
 
-  return white_pieces_value + black_piece_value
+  return white_val + black_val
 
 
   
