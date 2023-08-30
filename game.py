@@ -34,7 +34,7 @@ class Game:
             f"AFTER My king is checked by: {p.my_king()[0].get_checks()} and pinned by {p.my_king()[0].get_pins()}")
         print("###################################")
 
-  def move(self, p: Agent) -> None:
+  def move(self, p: Agent) -> str | None:
     option, curr_pos, new_pos = p.get_move()
     curr_pos_piece = self.board.lookup(curr_pos)
     new_pos_piece = self.board.lookup(new_pos)
@@ -63,6 +63,8 @@ class Game:
       self.board.place(new_pos, curr_pos_piece)
       self.board.add_piece(curr_pos_piece)
       curr_pos_piece.set_pos(new_pos)
+
+      return "DONE"
 
   def make_piece(self, fen_char: str, pos: tuple[int, int]) -> Piece:
     mapping = {
@@ -126,5 +128,17 @@ class Game:
       elif color == WHITE and pieces.isupper():
         for piece in self.board.pieces[pieces]:
           all_moves.extend(piece.moves())
+
+    return all_moves
+
+  def all_moves_by_color_dict(self, color: int) -> dict:
+    all_moves = {}
+    for pieces in self.board.pieces:
+      if color == BLACK and pieces.islower():
+        for piece in self.board.pieces[pieces]:
+          all_moves[piece] = piece.moves()
+      elif color == WHITE and pieces.isupper():
+        for piece in self.board.pieces[pieces]:
+          all_moves[piece] = piece.moves()
 
     return all_moves
