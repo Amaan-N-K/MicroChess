@@ -72,3 +72,14 @@ class Board:
         row_string += piece_char + "|"
 
       print(row_string)
+
+  def copy(self):
+    copied_board = Board(self.row_size, self.col_size)
+    for i in range(self.row_size):
+      for j in range(self.col_size):
+        piece = self.lookup((i, j))
+        if piece is not None:
+          copied_board.place((i, j), piece)
+          copied_board.add_piece(piece)  # Update the pieces dictionary in the copied board
+
+    return copied_board

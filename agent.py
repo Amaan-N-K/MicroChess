@@ -1,5 +1,5 @@
 from board import Board
-
+from evaluate import *
 
 class Agent:
   def __init__(self, color: int, board: Board) -> None:
@@ -20,7 +20,7 @@ class Agent:
     return self.board.get_piece("K") if self.get_color() == 0 else self.board.get_piece("k")
 
   def get_move(self) -> list[int, tuple[int, int]]:
-    raise NotImplementedError("This method must be ovverided by child classes")
+    raise NotImplementedError("This method must be overided by child classes")
 
 
 class HumanAgent(Agent):
@@ -52,3 +52,10 @@ class HumanAgent(Agent):
       if count == 10:
         print("You are trolling")
         break
+
+
+class MinimaxAgent(Agent):
+  def __init__(self, color: int, board: Board) -> None:
+    super().__init__(color, board)
+
+

@@ -64,8 +64,6 @@ class Game:
       self.board.add_piece(curr_pos_piece)
       curr_pos_piece.set_pos(new_pos)
 
-      return "DONE"
-
   def make_piece(self, fen_char: str, pos: tuple[int, int]) -> Piece:
     mapping = {
         'P': lambda: Pawn(0, pos, self.board),
