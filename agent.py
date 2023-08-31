@@ -100,8 +100,6 @@ class MinimaxAgent(Agent):
     curr_pos_piece.set_pos(curr_pos)
 
   def minimax(self, move_func, depth: int, is_white: bool) -> tuple:
-    self.board.print_board()
-    print('############')
     white_king = self.board.get_piece("K")[0]
     black_king = self.board.get_piece("k")[0]
     white_king.checks_and_pins()
@@ -133,7 +131,6 @@ class MinimaxAgent(Agent):
         for move in white_moves[piece]:
           data = self.apply_move(piece.get_pos(), move)
           eval_val = self.minimax(all_moves_by_color_dict, depth - 1, False)
-          print(eval_val[0])
           self.undo_move(data)
           evals.append((eval_val[0], (piece.get_pos(), move)))
       m = max(evals, key=lambda x: x[0])
@@ -145,12 +142,12 @@ class MinimaxAgent(Agent):
         for move in black_moves[piece]:
           data = self.apply_move(piece.get_pos(), move)
           eval_val = self.minimax(all_moves_by_color_dict, depth - 1, True)
-          print(eval_val[0])
           self.undo_move(data)
           evals.append((eval_val[0], (piece.get_pos(), move)))
       return min(evals, key=lambda x: x[0])
 
   def get_move(self):
+    self.board.print_board()
     move = self.minimax(all_moves_by_color_dict, 3, self.color == 0)[1]
     return move
 

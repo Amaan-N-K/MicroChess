@@ -57,7 +57,7 @@ class Game:
       self.board.forget_piece(curr_pos_piece)
       curr_pos_piece.remove_pos()
 
-      if new_pos_piece != None:
+      if new_pos_piece is not None:
         self.board.remove(new_pos)
         self.board.forget_piece(new_pos_piece)
         new_pos_piece.remove_pos()

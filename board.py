@@ -15,7 +15,12 @@ class Board:
     return self.board[pos[0]][pos[1]] is None
 
   def add_piece(self, piece: any) -> None:
-    self.pieces.setdefault(str(piece), []).append(piece)
+    # self.pieces.setdefault(str(piece), []).append(piece)
+    if str(piece) not in self.pieces:
+      self.pieces[str(piece)] = [piece]
+    else:
+      self.pieces[str(piece)].append(piece)
+
 
   def forget_piece(self, piece: any) -> None:
     self.pieces[str(piece)] = [p for p in self.pieces.get(

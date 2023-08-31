@@ -35,8 +35,6 @@ def basic_eval(board: Board) -> int:
     for knight in board.pieces['N']:
       white_val += len(knight.moves()) * 0.1
 
-  print('2')
-
   if 'b' in board.pieces:
     for bishop in board.pieces['b']:
       black_val -= len(bishop.moves()) * 0.1
@@ -44,7 +42,6 @@ def basic_eval(board: Board) -> int:
     for bishop in board.pieces['B']:
       white_val += len(bishop.moves()) * 0.1
 
-  print('3')
 
   if 'p' in board.pieces:
     for pawn in board.pieces['p']:
