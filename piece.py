@@ -283,11 +283,16 @@ class Knight(Piece):
     checks = my_king.get_checks()
     pins = my_king.get_pins()
     # Knight can never move if pinned
-
     if len(checks) == 2 or self in pins:
       return []
     elif len(checks) == 1:
       possible_moves = self.possible_moves()
+
+      if isinstance(checks[0], Knight) and checks[0].get_pos() in possible_moves:
+        return [checks[0].get_pos()]
+      elif isinstance(checks[0], Knight):
+        return []
+
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
       check_blocks = check_line(king_pos, check_pos)
@@ -362,6 +367,12 @@ class Pawn(Piece):
       return []
     elif len(checks) == 1:
       possible_moves = self.possible_moves()
+
+      if isinstance(checks[0], Knight) and checks[0].get_pos() in possible_moves:
+        return [checks[0].get_pos()]
+      elif isinstance(checks[0], Knight):
+        return []
+
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
 
@@ -436,6 +447,12 @@ class SlidingPiece(Piece):
       return []
     elif len(checks) == 1:
       possible_moves = self.possible_moves()
+
+      if isinstance(checks[0], Knight) and checks[0].get_pos() in possible_moves:
+        return [checks[0].get_pos()]
+      elif isinstance(checks[0], Knight):
+        return []
+
       king_pos = my_king.get_pos()
       check_pos = checks[0].get_pos()
       check_blocks = check_line(king_pos, check_pos)

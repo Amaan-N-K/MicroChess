@@ -2,6 +2,7 @@ from typing import *
 from board import Board
 from piece import Piece, King, Knight, Pawn, Queen, Rook, Bishop
 from agent import *
+from evaluate import *
 WHITE, BLACK = 0, 1
 ROW_SIZE = 5
 COL_SIZE = 4
@@ -9,9 +10,9 @@ STARTING_FEN = "knbr/p3/4/3P/RBNK"
 
 
 class Game:
-  def __init__(self) -> None:
+  def __init__(self, agent) -> None:
     self.board = Board(ROW_SIZE, COL_SIZE)
-    self.players = (HumanAgent(0, self.board), HumanAgent(1, self.board))
+    self.players = (agent(0, self.board, basic_eval), agent(1, self.board, basic_eval))
     self._starting_position()
 
   def play(self) -> None:
@@ -35,7 +36,8 @@ class Game:
         print("###################################")
 
   def move(self, p: Agent) -> str | None:
-    option, curr_pos, new_pos = p.get_move()
+    option = 1
+    curr_pos, new_pos = p.get_move()
     curr_pos_piece = self.board.lookup(curr_pos)
     new_pos_piece = self.board.lookup(new_pos)
 
