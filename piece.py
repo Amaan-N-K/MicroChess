@@ -187,6 +187,7 @@ class King(Piece):
     for offset in self.offsets:
       next_pos = (pos[0] + offset[0], pos[1] + offset[1])
       while self.board.is_valid_pos(next_pos):
+        print(next_pos)
         piece = self.board.lookup(next_pos)
         if piece is None: next_pos = (next_pos[0] + offset[0], next_pos[1] + offset[1])
         elif piece.get_color() == self.get_color(): break

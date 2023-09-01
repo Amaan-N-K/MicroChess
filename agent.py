@@ -130,6 +130,9 @@ class MinimaxAgent(Agent):
       for piece in white_moves:
         for move in white_moves[piece]:
           data = self.apply_move(piece.get_pos(), move)
+          print('WHITE')
+          self.board.print_board()
+          print('##########')
           eval_val = self.minimax(all_moves_by_color_dict, depth - 1, False)
           self.undo_move(data)
           evals.append((eval_val[0], (piece.get_pos(), move)))
@@ -141,15 +144,18 @@ class MinimaxAgent(Agent):
       for piece in black_moves:
         for move in black_moves[piece]:
           data = self.apply_move(piece.get_pos(), move)
+          print('BLACK')
+          self.board.print_board()
+          print('##########')
           eval_val = self.minimax(all_moves_by_color_dict, depth - 1, True)
           self.undo_move(data)
           evals.append((eval_val[0], (piece.get_pos(), move)))
       return min(evals, key=lambda x: x[0])
 
   def get_move(self):
-    self.board.print_board()
+    # self.board.print_board()
     move = self.minimax(all_moves_by_color_dict, 3, self.color == 0)[1]
-    return move
+    return (1, move[0], move[1])
 
 
 def all_moves_by_color_dict(board: Board, color: int) -> dict:
@@ -157,6 +163,8 @@ def all_moves_by_color_dict(board: Board, color: int) -> dict:
     for pieces in board.pieces:
       if color == BLACK and pieces.islower():
         for piece in board.pieces[pieces]:
+          if pieces == 'k':
+            print(piece.moves())
           all_moves[piece] = piece.moves()
       if color == WHITE and pieces.isupper():
         for piece in board.pieces[pieces]:

@@ -6,13 +6,13 @@ from evaluate import *
 WHITE, BLACK = 0, 1
 ROW_SIZE = 5
 COL_SIZE = 4
-STARTING_FEN = "knbr/p3/4/3P/RBNK"
+STARTING_FEN = "1nbr/Rk2/1N2/3P/1B1K"
 
 
 class Game:
-  def __init__(self, agent) -> None:
+  def __init__(self, agent: Callable) -> None:
     self.board = Board(ROW_SIZE, COL_SIZE)
-    self.players = (agent(0, self.board, basic_eval), agent(1, self.board, basic_eval))
+    self.players = (agent(0, self.board, basic_eval), agent(1, self.board, basic_eval)) if agent == MinimaxAgent else (agent(0, self.board), agent(1, self.board))
     self._starting_position()
 
   def play(self) -> None:
@@ -36,8 +36,7 @@ class Game:
         print("###################################")
 
   def move(self, p: Agent) -> str | None:
-    option = 1
-    curr_pos, new_pos = p.get_move()
+    option, curr_pos, new_pos = p.get_move()
     curr_pos_piece = self.board.lookup(curr_pos)
     new_pos_piece = self.board.lookup(new_pos)
 
