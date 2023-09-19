@@ -149,8 +149,8 @@ class King(Piece):
         checks.append(self.board.lookup(possible_pos))
 
     # Checking for check by pawn
-    vertical_direction = -1 if self.get_color() == "W" else 1
-
+    vertical_direction = -1 if self.get_color() == WHITE else 1
+    print(vertical_direction)
     # Capture moves (diagonal)
     diagonal_moves = [
         (curr_pos[0] + vertical_direction, curr_pos[1] - 1),
@@ -158,10 +158,12 @@ class King(Piece):
     ]
 
     for move in diagonal_moves:
+      # print(move)
       if self.board.is_valid_pos(move):
         piece_at_cell = self.board.lookup(move)
-        if piece_at_cell and piece_at_cell.get_color() != self.get_color() and piece_at_cell is Pawn:
-          checks.append(piece_at_cell)
+        if piece_at_cell is not None:
+          if piece_at_cell.get_color() != self.get_color() and isinstance(piece_at_cell, Pawn):
+            checks.append(piece_at_cell)
 
     if len(checks) > 2:
       raise ValueError("More than 2 pieces can not check at once")

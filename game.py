@@ -10,9 +10,11 @@ STARTING_FEN = "knbr/p3/4/3P/RBNK"
 
 
 class Game:
-  def __init__(self, agent: Callable) -> None:
+  def __init__(self, agent1: Callable, agent2: Callable) -> None:
     self.board = Board(ROW_SIZE, COL_SIZE)
-    self.players = (agent(0, self.board, basic_eval), agent(1, self.board, basic_eval)) if agent == MinimaxAgent else (agent(0, self.board), agent(1, self.board))
+    player1 = (agent1(0, self.board, basic_eval)) if agent1 == MinimaxAgent else agent1(0, self.board)
+    player2 = (agent2(1, self.board, basic_eval)) if agent2 == MinimaxAgent else agent1(1, self.board)
+    self.players = (player1, player2)
     self._starting_position()
 
   def play(self) -> None:
@@ -36,8 +38,7 @@ class Game:
         print("###################################")
 
   def move(self, p: Agent) -> str | None:
-    option, curr_pos, new_pos, promo = p.get_move()
-    print(option, curr_pos, new_pos)
+    option, curr_pos, new_pos = p.get_move()
     curr_pos_piece = self.board.lookup(curr_pos)
     new_pos_piece = self.board.lookup(new_pos)
 
@@ -66,8 +67,6 @@ class Game:
       self.board.add_piece(curr_pos_piece)
       curr_pos_piece.set_pos(new_pos)
 
-      if promo is not None:
-        self.promote(curr_pos_piece, promo)
       return "DONE"
 
   def make_piece(self, fen_char: str, pos: tuple[int, int]) -> Piece:
@@ -134,20 +133,6 @@ class Game:
           all_moves.extend(piece.moves())
 
     return all_moves
-
-  def promote(self, pawn: Pawn, new_piece: str):
-    pos = pawn.get_pos()
-    self.board.remove(pos)
-    self.board.forget_piece(pawn)
-    pawn.remove_pos()
-
-    new_piece = self.make_piece(new_piece, pos)
-
-    self.board.place(pos, new_piece)
-    self.board.add_piece(new_piece)
-    new_piece.set_pos(pos)
-
-
 
 
 

@@ -2,9 +2,6 @@ from board import Board
 from evaluate import *
 from piece import *
 WHITE, BLACK = 0, 1
-PROMO_WHITE = ['Q', 'B', 'N', 'R']
-PROMO_BLACK = ['q', 'b', 'n', 'r']
-
 
 class Agent:
   def __init__(self, color: int, board: Board) -> None:
@@ -25,10 +22,7 @@ class Agent:
     return self.board.get_piece("K") if self.get_color() == 0 else self.board.get_piece("k")
 
   def get_move(self) -> list[int, tuple[int, int]]:
-    raise NotImplementedError("This method must be overided by child classes")
-
-  def promote(self, pawn: Pawn, new_piece: str) -> None:
-    raise NotImplementedError
+    raise NotImplementedError("This method must be override by child classes")
 
   def make_piece(self, fen_char: str, pos: tuple[int, int]) -> Piece:
     mapping = {
@@ -84,49 +78,6 @@ class MinimaxAgent(Agent):
     super().__init__(color, board)
     self.eval_func = eval_func
 
-  def apply_promotion(self, curr_pos_piece, new_pos, new_piece: str) -> list[tuple[int, int], any, tuple[int, int], any]:
-    new_pos_piece = self.board.lookup(new_pos)
-    curr_pos = curr_pos_piece.get_pos()
-    self.board.remove(curr_pos)
-    self.board.forget_piece(curr_pos_piece)
-    curr_pos_piece.remove_pos()
-
-    data = [curr_pos, curr_pos_piece, new_pos, None]
-
-    if new_pos_piece is not None:
-      self.board.remove(new_pos)
-      self.board.forget_piece(new_pos_piece)
-      new_pos_piece.remove_pos()
-      data[3] = new_pos_piece
-
-    curr_pos_piece.set_pos(new_pos)
-    curr_pos_piece = self.promote(curr_pos_piece, new_piece)
-    self.board.place(new_pos, curr_pos_piece)
-    self.board.add_piece(curr_pos_piece)
-
-    data[1] = curr_pos_piece
-
-    return data
-
-  def undo_promotion(self, data: list[tuple[int, int], any, tuple[int, int], any]) -> None:
-    curr_pos, curr_pos_piece, new_pos, new_pos_piece = data
-
-    self.board.remove(new_pos)
-    self.board.forget_piece(curr_pos_piece)
-    curr_pos_piece.remove_pos()
-
-    if new_pos_piece is not None:
-      self.board.place(new_pos, new_pos_piece)
-      self.board.add_piece(new_pos_piece)
-      new_pos_piece.set_pos(new_pos)
-
-    p = 'p' if self.color == BLACK else 'P'
-    pawn = self.make_piece(p, curr_pos)
-
-    self.board.place(curr_pos, pawn)
-    self.board.add_piece(pawn)
-    pawn.set_pos(curr_pos)
-
   def apply_move(self, curr_pos_piece, new_pos) -> list[tuple[int, int], any, tuple[int, int], any]:
     curr_pos = curr_pos_piece.get_pos()
     new_pos_piece = self.board.lookup(new_pos)
@@ -176,89 +127,58 @@ class MinimaxAgent(Agent):
     black_moves_len = sum([len(moves) for moves in black_moves.values()])
 
     if depth == 0:
-      return (self.eval_func(self.board), (None, None), None)
+      return (self.eval_func(self.board), (None, None))
 
     # Checkmate
     if white_moves_len == 0 and len(white_king.get_checks()) > 0:
-      return (self.eval_func(self.board), (None, None), None)
+      return (self.eval_func(self.board), (None, None))
     if black_moves_len == 0 and len(black_king.get_checks()) > 0:
-      return (self.eval_func(self.board), (None, None), None)
+      return (self.eval_func(self.board), (None, None))
 
     # Draw
     if is_white and len(white_moves) == 0:
-      return (self.eval_func(self.board), (None, None), None)
+      return (self.eval_func(self.board), (None, None))
     if not is_white and len(black_moves) == 0:
-      return (self.eval_func(self.board), (None, None), None)
+      return (self.eval_func(self.board), (None, None))
 
     if is_white:
       evals = []
       for piece in white_moves:
         for move in white_moves[piece]:
-          # if isinstance(piece, Pawn) and move[0] == 0:
-          #   for promotion_option in PROMO_WHITE:
-          #     if piece.get_pos() is None:
-          #       print('broken')
-          #       quit()
-          #     data = self.apply_promotion(piece, move, promotion_option)
-          #     eval_val = self.minimax(all_moves_by_color_dict, depth - 1, False)
-          #     self.undo_promotion(data)
-          #     evals.append((eval_val[0], (piece.get_pos(), move), promotion_option))
-          # else:
           data = self.apply_move(piece, move)
-          eval_val = self.minimax(all_moves_by_color_dict, depth - 1, False)
-          print(eval_val)
+          evaluation = self.minimax(all_moves_by_color_dict, depth - 1, False)
           self.undo_move(data)
-          evals.append((eval_val[0], (piece.get_pos(), move), None))
+          evals.append((evaluation[0], (piece.get_pos(), move)))
       white_king.checks_and_pins()
       black_king.checks_and_pins()
+      if evals == []:
+        return (0, (None, None))
       return max(evals, key=lambda x: x[0])
-
     else:
       evals = []
       for piece in black_moves:
         for move in black_moves[piece]:
-
-          # if isinstance(piece, Pawn) and move[0] == self.board.row_size - 1:
-          #   for promotion_option in PROMO_BLACK:
-          #     if piece.get_pos() is None:
-          #       print(black_moves)
-          #       print(promotion_option)
-          #       print('broken')
-          #       quit()
-          #     data = self.apply_promotion(piece, move, promotion_option)
-          #     eval_val = self.minimax(all_moves_by_color_dict, depth - 1, True)
-          #     self.undo_promotion(data)
-          #     evals.append((eval_val[0], (piece.get_pos(), move), promotion_option))
-          # else:
           data = self.apply_move(piece, move)
           eval_val = self.minimax(all_moves_by_color_dict, depth - 1, True)
           self.undo_move(data)
-          evals.append((eval_val[0], (piece.get_pos(), move), None))
+          evals.append((eval_val[0], (piece.get_pos(), move)))
       white_king.checks_and_pins()
       black_king.checks_and_pins()
+      if evals == []:
+        return (0, (None, None))
       return min(evals, key=lambda x: x[0])
 
   def get_move(self):
     self.board.print_board()
     print('#########')
     move = self.minimax(all_moves_by_color_dict, 3, self.color == 0)
-    return (1, move[1][0], move[1][1], move[2])
-
-  def promote(self, pawn: Pawn, new_piece: str) -> Piece:
-    pos = pawn.get_pos()
-    self.board.remove(pos)
-    self.board.forget_piece(pawn)
-
-    new_piece = self.make_piece(new_piece, pos)
-
-    self.board.place(pos, new_piece)
-    self.board.add_piece(new_piece)
-    new_piece.set_pos(pos)
-
-    return new_piece
-
+    return (1, move[1][0], move[1][1])
 
 def all_moves_by_color_dict(board: Board, color: int) -> dict:
+    white_king = board.get_piece("K")[0]
+    black_king = board.get_piece("k")[0]
+    white_king.checks_and_pins()
+    black_king.checks_and_pins()
     all_moves = {}
     for pieces in board.pieces:
       if color == BLACK and pieces.islower():

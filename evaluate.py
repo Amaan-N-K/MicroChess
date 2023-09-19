@@ -45,7 +45,6 @@ def basic_eval(board: Board) -> int:
     for bishop in board.pieces['B']:
       white_val += len(bishop.moves()) * 0.1
 
-
   if 'p' in board.pieces:
     for pawn in board.pieces['p']:
       black_val += pawn.get_pos()[0] * 0.3
@@ -53,18 +52,6 @@ def basic_eval(board: Board) -> int:
     for pawn in board.pieces['P']:
       white_val += (board.row_size - 1 - pawn.get_pos()[0]) * 0.3
 
-  # if 'k' in board.pieces:
-  #   for king in board.pieces['k']:
-  #     if white_piece_count > 9:
-  #       king_vector = (king.get_pos()[0] ** 2 + king.get_pos()[1] ** 2) ** 0.5
-  #       black_val += min(king_vector, abs(board.col_size - 1 - king_vector))
-  # if 'K' in board.pieces:
-  #   for king in board.pieces['K']:
-  #     if black_piece_count > 9:
-  #       king_vector = (king.get_pos()[0] ** 2 + king.get_pos()[1] ** 2) ** 0.5
-  #       corner = (board.row_size - 1) ** 2 + (board.col_size - 1) ** 2
-  #       white_val += min(abs(corner - king_vector),
-  #                        abs(board.row_size - 1 - king_vector))
 
   # Return a value favoring white if positive, and black if negative
   return white_val - black_val
