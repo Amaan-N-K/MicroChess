@@ -6,7 +6,7 @@ from evaluate import *
 WHITE, BLACK = 0, 1
 ROW_SIZE = 5
 COL_SIZE = 4
-STARTING_FEN = "1nbr/Rk2/1N2/3P/1B1K"
+STARTING_FEN = "knbr/p3/4/3P/RBNK"
 
 
 class Game:
@@ -36,7 +36,8 @@ class Game:
         print("###################################")
 
   def move(self, p: Agent) -> str | None:
-    option, curr_pos, new_pos = p.get_move()
+    option, curr_pos, new_pos, promo = p.get_move()
+    print(option, curr_pos, new_pos)
     curr_pos_piece = self.board.lookup(curr_pos)
     new_pos_piece = self.board.lookup(new_pos)
 
@@ -65,6 +66,8 @@ class Game:
       self.board.add_piece(curr_pos_piece)
       curr_pos_piece.set_pos(new_pos)
 
+      if promo is not None:
+        self.promote(curr_pos_piece, promo)
       return "DONE"
 
   def make_piece(self, fen_char: str, pos: tuple[int, int]) -> Piece:
@@ -131,5 +134,21 @@ class Game:
           all_moves.extend(piece.moves())
 
     return all_moves
+
+  def promote(self, pawn: Pawn, new_piece: str):
+    pos = pawn.get_pos()
+    self.board.remove(pos)
+    self.board.forget_piece(pawn)
+    pawn.remove_pos()
+
+    new_piece = self.make_piece(new_piece, pos)
+
+    self.board.place(pos, new_piece)
+    self.board.add_piece(new_piece)
+    new_piece.set_pos(pos)
+
+
+
+
 
 

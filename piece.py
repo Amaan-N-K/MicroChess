@@ -54,6 +54,9 @@ class Piece:
   def moves(self) -> list[tuple[int, int]]:
     raise NotImplementedError("The parent piece class can not move")
 
+  def attacking_squares(self) -> set:
+    raise NotImplementedError
+
   def my_king(self) -> any:
     return self.board.get_piece("K")[0] if self.color == WHITE else self.board.get_piece("k")[0]
 
@@ -187,7 +190,6 @@ class King(Piece):
     for offset in self.offsets:
       next_pos = (pos[0] + offset[0], pos[1] + offset[1])
       while self.board.is_valid_pos(next_pos):
-        print(next_pos)
         piece = self.board.lookup(next_pos)
         if piece is None: next_pos = (next_pos[0] + offset[0], next_pos[1] + offset[1])
         elif piece.get_color() == self.get_color(): break
@@ -214,6 +216,21 @@ class King(Piece):
 
     return False
 
+  def _opponent_pieces(self) -> list[Piece]:
+    opps = []
+    if self.color == WHITE:
+      for p in self.board.pieces:
+        if p.islower():
+          for piece in self.board.pieces[p]:
+            opps.append(piece)
+    else:
+      for p in self.board.pieces:
+        if p.isupper():
+          for piece in self.board.pieces[p]:
+            opps.append(piece)
+
+    return opps
+
   def moves(self) -> list[tuple[int, int]]:
     """
     Doctest:
@@ -233,13 +250,18 @@ class King(Piece):
       possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
       if not self.board.is_valid_pos(possible_pos):
         continue
-      elif self.board.lookup(possible_pos) is None:
-        if not self.is_pos_attacked(possible_pos):
+      elif self.board.lookup(possible_pos) is None or self.board.lookup(possible_pos).get_color() == opponent_color:
+        if all(possible_pos not in piece.attacking_squares() for piece in self._opponent_pieces()):
           moves.append(possible_pos)
-      elif self.board.lookup(possible_pos).get_color() == opponent_color and not self.is_pos_attacked(possible_pos):
-        moves.append(possible_pos)
-
     return moves
+
+  def attacking_squares(self) -> set:
+    squares = set()
+    for offset in self.offsets:
+      pos = (self.get_pos()[0] + offset[0], self.get_pos()[1] + offset[1])
+      if self.board.is_valid_pos(pos):
+        squares.add(pos)
+    return squares
 
 
 class Knight(Piece):
@@ -288,7 +310,6 @@ class Knight(Piece):
       return []
     elif len(checks) == 1:
       possible_moves = self.possible_moves()
-
       if isinstance(checks[0], Knight) and checks[0].get_pos() in possible_moves:
         return [checks[0].get_pos()]
       elif isinstance(checks[0], Knight):
@@ -305,6 +326,13 @@ class Knight(Piece):
     else:
       return self.possible_moves()
 
+  def attacking_squares(self) -> set:
+    squares = set()
+    for offset in self.offsets:
+      pos = (self.get_pos()[0] + offset[0], self.get_pos()[1] + offset[1])
+      if self.board.is_valid_pos(pos):
+        squares.add(pos)
+    return squares
 
 class Pawn(Piece):
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
@@ -405,6 +433,19 @@ class Pawn(Piece):
     else:
       return self.possible_moves()
 
+  def attacking_squares(self) -> set:
+
+    forward_d = -1 if self.get_color() == WHITE else 1
+    squares = set()
+    for horizontal_d in [1, -1]:
+      pos = (self.get_pos()[0] + forward_d, self.get_pos()[1] + horizontal_d)
+      if self.board.is_valid_pos(pos):
+        squares.add(pos)
+
+    return squares
+
+
+
 
 class SlidingPiece(Piece):
   def __init__(self, color: int, pos: tuple[int, int], board: Board):
@@ -479,6 +520,23 @@ class SlidingPiece(Piece):
 
     else:
       return self.possible_moves()
+
+  def attacking_squares(self) -> set:
+    squares = set()
+    for offset in self.offsets:
+      pos = (self.get_pos()[0] + offset[0], self.get_pos()[1] + offset[1])
+      while self.board.is_valid_pos(pos):
+        if self.board.lookup(pos) is not None:
+          squares.add(pos)
+          if isinstance(self.board.lookup(pos), King) and self.board.lookup(pos).color != self.get_color():
+            pos = (pos[0] + offset[0], pos[1] + offset[1])
+          else:
+            break
+        else:
+          squares.add(pos)
+          pos = (pos[0] + offset[0], pos[1] + offset[1])
+
+    return squares
 
 
 class Queen(SlidingPiece):

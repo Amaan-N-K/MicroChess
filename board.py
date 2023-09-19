@@ -21,7 +21,6 @@ class Board:
     else:
       self.pieces[str(piece)].append(piece)
 
-
   def forget_piece(self, piece: any) -> None:
     self.pieces[str(piece)] = [p for p in self.pieces.get(
         str(piece), []) if p != piece]
