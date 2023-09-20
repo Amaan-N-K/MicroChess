@@ -151,39 +151,83 @@ async function handleCellClick(event) {
 
       selectedPiece = null;
       legalMoves = [];
+      if (moveData.ai_move) {
+        // If AI's king is in check, make it glow pink for two seconds
+        if (moveData.ai_in_check && moveData.ai_king_position) {
+        const kingCell = document.querySelector(`[data-row_count='${moveData.ai_king_position[0]}'][data-col_count='${moveData.ai_king_position[1]}']`);
+        kingCell.style.backgroundColor = 'pink';
+        kingCell.classList.add('in-check');
+        await new Promise(resolve => setTimeout(resolve, 500));  // Wait for 2 seconds
+        }
+
+        // Make the AI's move after highlighting in_check (if applicable)
+        const aiOldCoor = moveData.ai_move.old_coor;
+        const aiNewCoor = moveData.ai_move.new_coor;
+
+        const aiOldPieceCell = document.querySelector(`[data-row_count='${aiOldCoor.row}'][data-col_count='${aiOldCoor.col}']`);
+        const aiNewPieceCell = document.querySelector(`[data-row_count='${aiNewCoor.row}'][data-col_count='${aiNewCoor.col}']`);
+
+        const aiOldPieceClass = Array.from(aiOldPieceCell.classList).find((cls) => cls.endsWith("-b") || cls.endsWith("-w"));
+        aiOldPieceCell.classList.remove(aiOldPieceClass);
+
+        const aiExistingPieceClass = Array.from(aiNewPieceCell.classList).find((cls) => cls.endsWith("-b") || cls.endsWith("-w"));
+        if (aiExistingPieceClass) {
+        aiNewPieceCell.classList.remove(aiExistingPieceClass);
+        }
+
+        aiNewPieceCell.classList.add(aiOldPieceClass);
+        aiNewPieceCell.style.backgroundSize = 'contain';
+
+        // Reset the 'in-check' status after the move is done
+        const previouslyCheckedKing = document.querySelector('.in-check');
+        if (previouslyCheckedKing) {
+        const isWhiteSquare = (parseInt(previouslyCheckedKing.dataset.row_count, 10) + parseInt(previouslyCheckedKing.dataset.col_count, 10)) % 2 === 0;
+        previouslyCheckedKing.style.backgroundColor = isWhiteSquare ? 'var(--white-cell)' : 'var(--black-cell)';
+        previouslyCheckedKing.classList.remove('in-check');
+        }
+
+        // Handle game_over logic for AI's move
+        if (moveData.ai_game_over) {
+        const kingCell = document.querySelector(`[data-row_count='${moveData.white_king_position[0]}'][data-col_count='${moveData.white_king_position[1]}']`);
+        kingCell.style.backgroundColor = 'red';
+
+        setTimeout(() => {
+          alert(moveData.message);
+          location.reload();
+        }, 50);
+        return;
+        }
+      }
     }
   }
 }
-const modeToggle = document.getElementById("modeToggle");
-const modeText = document.getElementById("modeText");
+const modeText = document.getElementById('modeText');
+const modeToggle = document.getElementById('modeToggle');
 
-function updateUIBasedOnToggleState() {
+// Function to set mode text based on toggle state
+function updateModeText() {
     if (modeToggle.checked) {
-        modeText.textContent = "Local 1v1 Mode";
-    } else {
         modeText.textContent = "1 vs Computer Mode";
+    } else {
+        modeText.textContent = "Local 1v1 Mode";
     }
 }
 
-// Set the toggle state on page load based on sessionStorage
+// Set the toggle state and mode text based on sessionStorage
 const savedToggleState = sessionStorage.getItem('modeToggleState');
 if (savedToggleState !== null) {
     modeToggle.checked = savedToggleState === 'true';
-    updateUIBasedOnToggleState();
 }
+updateModeText();  // Update mode text based on initial toggle state
 
 modeToggle.addEventListener('change', function() {
     // Save the current state of the toggle to sessionStorage
     sessionStorage.setItem('modeToggleState', modeToggle.checked);
 
-    if (modeToggle.checked) {
-        console.log("Local 1v1 Mode");
-    } else {
-        console.log("1 vs Computer Mode");
-    }
+    updateModeText();  // Update mode text based on changed toggle state
 
     // Change the game mode on the server when the toggle is clicked
-    fetch('http://localhost:5000/change_mode') // Updated URL
+    fetch('http://localhost:5000/change_mode')
     .then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -202,6 +246,7 @@ modeToggle.addEventListener('change', function() {
         console.error('Error:', error);
     });
 });
+
 
 
 

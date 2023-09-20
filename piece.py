@@ -585,7 +585,6 @@ def check_line(king_pos: tuple[int, int], checker_pos: tuple[int, int]) -> list[
   curr_pos = king_pos
 
   while curr_pos != checker_pos:
-    print('here')
     curr_pos = ((curr_pos[0] + vector[0]), (curr_pos[1] + vector[1]))
     pin_line.append(curr_pos)
 

@@ -131,7 +131,7 @@ class Game:
       elif len(all_moves) == 0:
         return [True, 'Draw']
       else:
-        return [False]
+        return [False, 'Continue']
     else:
       all_moves = self.all_moves_by_color(BLACK)
       if len(all_moves) == 0 and len(self.board.pieces["k"][0].get_checks()) >= 1:
@@ -139,7 +139,7 @@ class Game:
       elif len(all_moves) == 0:
         return [True, 'Draw']
       else:
-        return [False]
+        return [False, 'Continue']
 
   def all_moves_by_color(self, color: int) -> list[tuple[int, int]]:
     all_moves = []

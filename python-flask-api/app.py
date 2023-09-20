@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from agent import Agent
+from agent import Agent, MinimaxAgent
 from board import Board
 from game import Game
+from evaluate import basic_eval
 WHITE, BLACK = 0, 1
 white_turn = True
 app = Flask(__name__)
 is_1v1 = True
+minimax = False
+
 CORS(app, resources={
     r"/get_legal_moves/*": {"origins": "http://localhost:63342"},
     r"/move": {"origins": "http://localhost:63342"},
@@ -24,9 +27,12 @@ g = Game(FrontendAgent, FrontendAgent)
 
 @app.route('/reset_game', methods=['POST'])
 def reset_game():
-    global g, white_turn
+    global g, white_turn, minimax
     white_turn = True
-    g = Game(FrontendAgent, FrontendAgent)
+
+    g = Game(None, None)
+    if not is_1v1:
+        minimax = MinimaxAgent(1, g.board, basic_eval)
     return jsonify(message="Game state reset successfully!")
 
 @app.route('/change_mode', methods=['GET'])
@@ -56,14 +62,46 @@ def move():
     print(game_state)
     king_pos = g.board.pieces["k" if white_turn else "K"][0].get_pos()
     if game_state[0]:
-        winner_message = "Black wins!" if not white_turn else "White wins!"
+        winner_message = game_state[1]
         return jsonify({"game_over": True, "message": winner_message, "king_position": king_pos, "legal_moves": []}), 200
 
     checks = g.board.pieces["k" if white_turn else "K"][0].checks
 
     if len(checks) > 0:
-        white_turn = not white_turn
-        return jsonify({"message": "Moved successfully", "in_check": True, "king_position": king_pos}), 200
+        if is_1v1:
+            white_turn = not white_turn
+            return jsonify({"message": "Moved successfully", "in_check": True, "king_position": king_pos}), 200
+
+    if not is_1v1:
+        ai_king_pos = g.board.pieces["k"][0].get_pos()  # Get AI's king position
+        moves = minimax.get_move()
+        curr_pos = moves[1]
+        new_pos = moves[2]
+        g.flask_move(curr_pos, new_pos)
+        g.board.print_board()
+        game_state = g.is_game_over(WHITE)
+
+        # Check if AI's king is in check after the move
+        ai_checks = g.board.pieces["k"][0].checks
+        white_king_pos = g.board.pieces["K"][0].get_pos()
+
+        # Convert tuples to dictionaries for JSON serialization
+        curr_pos_dict = {"row": curr_pos[0], "col": curr_pos[1]}
+        new_pos_dict = {"row": new_pos[0], "col": new_pos[1]}
+
+        # Return the move as structured JSON
+        return jsonify({
+            "message": "Moved successfully",
+            "ai_move": {
+                "old_coor": curr_pos_dict,
+                "new_coor": new_pos_dict
+            },
+            "ai_in_check": len(ai_checks) > 0,  # True if AI king is in check
+            "ai_king_position": ai_king_pos,  # Add the AI king's position here
+            "ai_game_over": game_state[0],
+            "result_message": game_state[1],
+            "white_king_position": white_king_pos
+        }), 200
 
     white_turn = not white_turn
 
