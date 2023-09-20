@@ -39,12 +39,10 @@ async function handleCellClick(event) {
   const col = parseInt(event.target.dataset.col_count, 10);
 
   if (!selectedPiece) {
-    // Handle the click on a piece
     const pieceResponse = await fetch(`http://localhost:5000/get_legal_moves/${row}/${col}`);
 
     if (pieceResponse.status === 400) {
-      // Inform the player that it's not the correct turn for the chosen piece
-      alert('Wrong turn! Please choose a valid piece.');  // Or any user-friendly message
+      alert('Wrong turn! Please choose a valid piece.');
       return;
     }
 
@@ -52,32 +50,25 @@ async function handleCellClick(event) {
       const pieceData = await pieceResponse.json();
 
       if (pieceData.legal_moves && pieceData.legal_moves.length > 0) {
-        // Highlight legal moves
         pieceData.legal_moves.forEach(move => {
           const cell = document.querySelector(`[data-row_count='${move[0]}'][data-col_count='${move[1]}']`);
           cell.classList.add('legal-move');
         });
 
-        // Store the legal moves
         legalMoves = pieceData.legal_moves;
-
-        // Store the selected piece for future reference
         selectedPiece = { row, col };
       }
     }
   } else {
-    // Check if the move is legal
     const isLegalMove = legalMoves.some(move => move[0] === row && move[1] === col);
 
     if (!isLegalMove) {
-      // If not a legal move, remove highlight from legal moves and reset
       document.querySelectorAll('.legal-move').forEach(cell => cell.classList.remove('legal-move'));
       selectedPiece = null;
       legalMoves = [];
-      return;  // Exit the function early
+      return;
     }
 
-    // Handle the click on a legal move
     const moveResponse = await fetch(`http://localhost:5000/move`, {
       method: "POST",
       headers: {
@@ -92,26 +83,14 @@ async function handleCellClick(event) {
     if (moveResponse.ok) {
       const moveData = await moveResponse.json();
 
-      // Handle game over situation
-      if (moveData.game_over) {
-        alert(moveData.message);
-        location.reload();  // Refresh the page
-        return;
-      }
-
-      // Update the visual appearance of the pieces
-      const oldPieceCell = document.querySelector(
-        `[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`
-      );
+      const oldPieceCell = document.querySelector(`[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`);
       const newPieceCell = event.target;
 
-      // Remove the class representing the piece from the old cell
       const oldPieceClass = Array.from(oldPieceCell.classList).find(
         (cls) => cls.endsWith("-b") || cls.endsWith("-w")
       );
       oldPieceCell.classList.remove(oldPieceClass);
 
-      // If there's already a piece on the new cell, remove it
       const existingPieceClass = Array.from(newPieceCell.classList).find(
         (cls) => cls.endsWith("-b") || cls.endsWith("-w")
       );
@@ -119,20 +98,23 @@ async function handleCellClick(event) {
         newPieceCell.classList.remove(existingPieceClass);
       }
 
-      // Add the class representing the piece to the new cell
       newPieceCell.classList.add(oldPieceClass);
-
-      // Adjust the size of the piece to prevent it from becoming too large
       newPieceCell.style.backgroundSize = 'contain';
-
-      // Remove highlight from legal moves
       document.querySelectorAll('.legal-move').forEach(cell => cell.classList.remove('legal-move'));
-
-      // Reset selectedPiece and legalMoves for the next turn
       selectedPiece = null;
       legalMoves = [];
+
+      if (moveData.game_over) {
+        const kingCell = document.querySelector(`[data-row_count='${moveData.king_position[0]}'][data-col_count='${moveData.king_position[1]}']`);
+        kingCell.style.backgroundColor = 'red';
+
+        setTimeout(() => {
+          alert(moveData.message);
+        }, 50);
+      }
     }
   }
 }
+
 
 

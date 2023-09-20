@@ -36,11 +36,14 @@ def move():
     print(game_state)
     if game_state[0]:
         winner_message = "Black wins!" if not white_turn else "White wins!"
-        return jsonify({"game_over": True, "message": winner_message, "legal_moves": []}), 200
+        # If the game is over, send the king's position
+        king_pos = g.board.pieces["k" if white_turn else "K"][0].get_pos()
+        return jsonify({"game_over": True, "message": winner_message, "king_position": king_pos, "legal_moves": []}), 200
 
     white_turn = not white_turn
 
     return jsonify({"message": "Moved successfully"}), 200
+
 
 
 @app.route('/get_legal_moves/<int:row>/<int:col>', methods=['GET'])
