@@ -38,6 +38,9 @@ async function handleCellClick(event) {
     const row = parseInt(event.target.dataset.row_count, 10);
     const col = parseInt(event.target.dataset.col_count, 10);
 
+    // Clear previous legal move indicators
+    document.querySelectorAll('.legal-move-circle').forEach(circle => circle.remove());
+
     if (!selectedPiece) {
         // Handle the click on a piece
         const pieceResponse = await fetch(`http://localhost:5000/get_legal_moves/${row}/${col}`);
@@ -52,10 +55,12 @@ async function handleCellClick(event) {
             const pieceData = await pieceResponse.json();
 
             if (pieceData.legal_moves && pieceData.legal_moves.length > 0) {
-                // Highlight legal moves
+                // Add legal move indicators
                 pieceData.legal_moves.forEach(move => {
                     const cell = document.querySelector(`[data-row_count='${move[0]}'][data-col_count='${move[1]}']`);
-                    cell.classList.add('legal-move');
+                    const circle = document.createElement('div');
+                    circle.classList.add('legal-move-circle');
+                    cell.appendChild(circle);
                 });
 
                 // Store the legal moves
@@ -70,8 +75,7 @@ async function handleCellClick(event) {
         const isLegalMove = legalMoves.some(move => move[0] === row && move[1] === col);
 
         if (!isLegalMove) {
-            // If not a legal move, remove highlight from legal moves and reset
-            document.querySelectorAll('.legal-move').forEach(cell => cell.classList.remove('legal-move'));
+            // Reset selectedPiece and legalMoves for the next turn if not a legal move
             selectedPiece = null;
             legalMoves = [];
             return;
@@ -125,17 +129,6 @@ async function handleCellClick(event) {
 
             newPieceCell.classList.add(oldPieceClass);
             newPieceCell.style.backgroundSize = 'contain';
-
-            document.querySelectorAll('.legal-move').forEach(cell => cell.classList.remove('legal-move'));
-
-            if (moveData.game_over) {
-                const kingCell = document.querySelector(`[data-row_count='${moveData.king_position[0]}'][data-col_count='${moveData.king_position[1]}']`);
-                kingCell.style.backgroundColor = 'red';
-
-                setTimeout(() => {
-                    alert(moveData.message);
-                }, 50);
-            }
 
             // Reset selectedPiece and legalMoves for the next turn
             selectedPiece = null;
