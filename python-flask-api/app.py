@@ -34,15 +34,21 @@ def move():
 
     game_state = g.is_game_over(BLACK if white_turn else WHITE)
     print(game_state)
+    king_pos = g.board.pieces["k" if white_turn else "K"][0].get_pos()
     if game_state[0]:
         winner_message = "Black wins!" if not white_turn else "White wins!"
-        # If the game is over, send the king's position
-        king_pos = g.board.pieces["k" if white_turn else "K"][0].get_pos()
         return jsonify({"game_over": True, "message": winner_message, "king_position": king_pos, "legal_moves": []}), 200
+
+    checks = g.board.pieces["k" if white_turn else "K"][0].checks
+
+    if len(checks) > 0:
+        white_turn = not white_turn
+        return jsonify({"message": "Moved successfully", "in_check": True, "king_position": king_pos}), 200
 
     white_turn = not white_turn
 
     return jsonify({"message": "Moved successfully"}), 200
+
 
 
 
