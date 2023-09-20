@@ -78,16 +78,16 @@ async function handleCellClick(event) {
       );
       oldPieceCell.classList.remove(oldPieceClass);
 
-      // Add the class representing the piece to the new cell
-      const newPieceClass = Array.from(newPieceCell.classList).find(
+      // If there's already a piece on the new cell, remove it
+      const existingPieceClass = Array.from(newPieceCell.classList).find(
         (cls) => cls.endsWith("-b") || cls.endsWith("-w")
       );
-      newPieceCell.classList.remove(newPieceClass);
-      newPieceCell.classList.add(oldPieceClass);
+      if (existingPieceClass) {
+        newPieceCell.classList.remove(existingPieceClass);
+      }
 
-      // Update the data attributes for the new cell
-      newPieceCell.dataset.row_count = selectedPiece.row;
-      newPieceCell.dataset.col_count = selectedPiece.col;
+      // Add the class representing the piece to the new cell
+      newPieceCell.classList.add(oldPieceClass);
 
       // Adjust the size of the piece to prevent it from becoming too large
       newPieceCell.style.backgroundSize = 'contain';
@@ -100,3 +100,4 @@ async function handleCellClick(event) {
     selectedPiece = null;
   }
 }
+
