@@ -32,6 +32,26 @@ for (let i = 0; i < 5; i++) {
   board.appendChild(row);
 }
 
+window.onload = function() {
+    fetch('http://localhost:5000/reset_game', {
+        method: 'POST'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.message) {
+            console.log(data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+};
+
 let legalMoves = [];  // New global variable to store legal moves
 
 async function handleCellClick(event) {
