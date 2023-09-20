@@ -144,7 +144,7 @@ class King(Piece):
     for offset in Knight.MOVE_OFFSETS:
       possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
 
-      if self.board.is_valid_pos(possible_pos) and isinstance(self.board.lookup(possible_pos), Knight):
+      if self.board.is_valid_pos(possible_pos) and isinstance(self.board.lookup(possible_pos), Knight) and self.board.lookup(possible_pos).color != self.color:
         checks.append(self.board.lookup(possible_pos))
 
     # Checking for check by pawn

@@ -9,6 +9,7 @@ white_turn = True
 app = Flask(__name__)
 is_1v1 = True
 minimax = False
+move_count = 0
 
 CORS(app, resources={
     r"/get_legal_moves/*": {"origins": "http://localhost:63342"},
@@ -45,7 +46,7 @@ def change_mode():
 
 @app.route('/move', methods=['POST'])
 def move():
-    global white_turn
+    global white_turn, move_count
     data = request.json
     old_coor = data.get('old_coor')
     new_coor = data.get('new_coor')
@@ -56,10 +57,9 @@ def move():
     for k in new_coor:
         new_pos.append(int(new_coor[k]))
     g.flask_move(curr_pos, new_pos)
-    print(f"Moving piece from {old_coor} to {new_coor}")
+    move_count += 1
 
-    game_state = g.is_game_over(BLACK if white_turn else WHITE)
-    print(game_state)
+    game_state = g.is_game_over(BLACK if white_turn else WHITE, move_count)
     king_pos = g.board.pieces["k" if white_turn else "K"][0].get_pos()
     if game_state[0]:
         winner_message = game_state[1]
@@ -73,16 +73,19 @@ def move():
             return jsonify({"message": "Moved successfully", "in_check": True, "king_position": king_pos}), 200
 
     if not is_1v1:
+        move_count += 1
+        g.board.print_board()
         ai_king_pos = g.board.pieces["k"][0].get_pos()  # Get AI's king position
+        ai_checks = g.board.pieces["k"][0].checks
         moves = minimax.get_move()
         curr_pos = moves[1]
         new_pos = moves[2]
         g.flask_move(curr_pos, new_pos)
         g.board.print_board()
-        game_state = g.is_game_over(WHITE)
+        game_state = g.is_game_over(WHITE, move_count)
+        print(game_state)
 
         # Check if AI's king is in check after the move
-        ai_checks = g.board.pieces["k"][0].checks
         white_king_pos = g.board.pieces["K"][0].get_pos()
 
         # Convert tuples to dictionaries for JSON serialization

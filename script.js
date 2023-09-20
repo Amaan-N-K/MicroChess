@@ -122,9 +122,6 @@ async function handleCellClick(event) {
         }
       }
 
-      // Handle game_over logic
-
-
       // Update the visual appearance of the pieces
       const oldPieceCell = document.querySelector(`[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`);
       const newPieceCell = event.target;
@@ -154,12 +151,14 @@ async function handleCellClick(event) {
       selectedPiece = null;
       legalMoves = [];
       if (moveData.ai_move) {
-        // If AI's king is in check, make it glow pink for two seconds
-        if (moveData.ai_in_check && moveData.ai_king_position) {
+      console.log("157");
+        // If AI's king is in check, make it glow pink for half a second
+        if (moveData.ai_in_check) {
         const kingCell = document.querySelector(`[data-row_count='${moveData.ai_king_position[0]}'][data-col_count='${moveData.ai_king_position[1]}']`);
         kingCell.style.backgroundColor = 'pink';
         kingCell.classList.add('in-check');
-        await new Promise(resolve => setTimeout(resolve, 500));  // Wait for 2 seconds
+        console.log("This line is being executed");
+        await new Promise(resolve => setTimeout(resolve, 500));  // Wait for half a second
         }
 
         // Make the AI's move after highlighting in_check (if applicable)
@@ -194,7 +193,7 @@ async function handleCellClick(event) {
         kingCell.style.backgroundColor = 'red';
 
         setTimeout(() => {
-          alert(moveData.message);
+          alert(moveData.result_message);
           location.reload();
         }, 50);
         return;
@@ -209,9 +208,9 @@ const modeToggle = document.getElementById('modeToggle');
 // Function to set mode text based on toggle state
 function updateModeText() {
     if (modeToggle.checked) {
-        modeText.textContent = "1 vs Computer Mode";
+        modeText.textContent = "Player vs Computer";
     } else {
-        modeText.textContent = "Local 1v1 Mode";
+        modeText.textContent = "Player vs Player";
     }
 }
 

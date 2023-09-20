@@ -10,15 +10,16 @@ STARTING_FEN = "knbr/p3/4/3P/RBNK"
 
 
 class Game:
-  def __init__(self, agent1: Callable, agent2: Callable) -> None:
+  def __init__(self, agent1, agent2) -> None:
     self.board = Board(ROW_SIZE, COL_SIZE)
-    # player1 = (agent1(0, self.board, basic_eval)) if agent1 == MinimaxAgent else agent1(0, self.board)
-    # player2 = (agent2(1, self.board, basic_eval)) if agent2 == MinimaxAgent else agent1(1, self.board)
-    # self.players = (player1, player2)
+    if agent1 is not None and agent2 is not None:
+      player1 = (agent1(0, self.board, basic_eval)) if agent1 == MinimaxAgent else agent1(0, self.board)
+      player2 = (agent2(1, self.board, basic_eval)) if agent2 == MinimaxAgent else agent1(1, self.board)
+      self.players = (player1, player2)
     self.players = (None, None)
     self._starting_position()
 
-  def play(self) -> None:
+  def _play(self) -> None:
     while True:
       for p in self.players:
         p.my_king()[0].checks_and_pins()
@@ -121,9 +122,20 @@ class Game:
           piece.set_pos((row_idx, col_idx))
           col_idx += 1
 
-  def is_game_over(self, color) -> list:
+  def is_game_over(self, color, move_count: int) -> list:
+    if move_count >= 50:
+      return [True, 'Draw']
+
+    if len(self.board.pieces['R']) + len(self.board.pieces['r']) == 0:
+      if len(self.board.pieces['B']) + len(self.board.pieces['N']) == 1:
+        return [True, 'Draw']
+      elif len(self.board.pieces['b']) + len(self.board.pieces['n']) == 1:
+        return [True, 'Draw']
+
     self.board.pieces["K"][0].checks_and_pins()
     self.board.pieces["k"][0].checks_and_pins()
+
+
     if color == WHITE:
       all_moves = self.all_moves_by_color(WHITE)
       if len(all_moves) == 0 and len(self.board.pieces["K"][0].get_checks()) >= 1:
@@ -146,7 +158,6 @@ class Game:
     for pieces in self.board.pieces:
       if color == BLACK and pieces.islower():
         for piece in self.board.pieces[pieces]:
-          print(piece)
           all_moves.extend(piece.moves())
       elif color == WHITE and pieces.isupper():
         for piece in self.board.pieces[pieces]:

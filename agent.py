@@ -31,7 +31,6 @@ class HumanAgent(Agent):
 
   def get_move(self) -> list[int, tuple[int, int]]:
     count = 0
-    self.board.print_board()
     if self.get_info():
       print(self.get_info())
     while True:
@@ -99,6 +98,7 @@ class MinimaxAgent(Agent):
     curr_pos_piece.set_pos(curr_pos)
 
   def minimax(self, move_func, depth: int, is_white: bool) -> tuple:
+
     white_king = self.board.get_piece("K")[0]
     black_king = self.board.get_piece("k")[0]
     white_king.checks_and_pins()
@@ -109,19 +109,20 @@ class MinimaxAgent(Agent):
     white_moves_len = sum([len(moves) for moves in white_moves.values()])
     black_moves_len = sum([len(moves) for moves in black_moves.values()])
 
-    if depth == 0:
-      return (self.eval_func(self.board), (None, None))
-
     # Checkmate
     if white_moves_len == 0 and len(white_king.get_checks()) > 0:
-      return (self.eval_func(self.board), (None, None))
+      return (-100000000 * depth - 100000000, (None, None))
     if black_moves_len == 0 and len(black_king.get_checks()) > 0:
-      return (self.eval_func(self.board), (None, None))
+      return (100000000 * depth + 100000000, (None, None))
+
 
     # Draw
     if is_white and len(white_moves) == 0:
-      return (self.eval_func(self.board), (None, None))
+      return (0, (None, None))
     if not is_white and len(black_moves) == 0:
+      return (0, (None, None))
+
+    if depth == 0:
       return (self.eval_func(self.board), (None, None))
 
     if is_white:
@@ -144,7 +145,7 @@ class MinimaxAgent(Agent):
           data = self.apply_move(piece, move)
           eval_val = self.minimax(all_moves_by_color_dict, depth - 1, True)
           self.undo_move(data)
-          evals.append((eval_val[0], (piece.get_pos(), move)))
+          evals.append((eval_val[0], (piece.get_pos(), move), str(piece)))
       white_king.checks_and_pins()
       black_king.checks_and_pins()
       if evals == []:
@@ -152,8 +153,6 @@ class MinimaxAgent(Agent):
       return min(evals, key=lambda x: x[0])
 
   def get_move(self):
-    self.board.print_board()
-    print('#########')
     move = self.minimax(all_moves_by_color_dict, 3, self.color == 0)
     return (1, move[1][0], move[1][1])
 
