@@ -24,23 +24,6 @@ class Agent:
   def get_move(self) -> list[int, tuple[int, int]]:
     raise NotImplementedError("This method must be override by child classes")
 
-  def make_piece(self, fen_char: str, pos: tuple[int, int]) -> Piece:
-    mapping = {
-        'P': lambda: Pawn(0, pos, self.board),
-        'R': lambda: Rook(0, pos, self.board),
-        'N': lambda: Knight(0, pos, self.board),
-        'B': lambda: Bishop(0, pos, self.board),
-        'Q': lambda: Queen(0, pos, self.board),
-        'K': lambda: King(0, pos, self.board),
-        'p': lambda: Pawn(1, pos, self.board),
-        'r': lambda: Rook(1, pos, self.board),
-        'n': lambda: Knight(1, pos, self.board),
-        'b': lambda: Bishop(1, pos, self.board),
-        'q': lambda: Queen(1, pos, self.board),
-        'k': lambda: King(1, pos, self.board),
-    }
-    return mapping.get(fen_char)()
-
 
 class HumanAgent(Agent):
   def __init__(self, color: int, board: Board) -> None:

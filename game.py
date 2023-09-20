@@ -12,9 +12,10 @@ STARTING_FEN = "knbr/p3/4/3P/RBNK"
 class Game:
   def __init__(self, agent1: Callable, agent2: Callable) -> None:
     self.board = Board(ROW_SIZE, COL_SIZE)
-    player1 = (agent1(0, self.board, basic_eval)) if agent1 == MinimaxAgent else agent1(0, self.board)
-    player2 = (agent2(1, self.board, basic_eval)) if agent2 == MinimaxAgent else agent1(1, self.board)
-    self.players = (player1, player2)
+    # player1 = (agent1(0, self.board, basic_eval)) if agent1 == MinimaxAgent else agent1(0, self.board)
+    # player2 = (agent2(1, self.board, basic_eval)) if agent2 == MinimaxAgent else agent1(1, self.board)
+    # self.players = (player1, player2)
+    self.players = (None, None)
     self._starting_position()
 
   def play(self) -> None:
@@ -68,6 +69,22 @@ class Game:
       curr_pos_piece.set_pos(new_pos)
 
       return "DONE"
+
+  def flask_move(self, curr_pos: tuple[int, int], new_pos: tuple[int, int]) -> None:
+    curr_pos_piece = self.board.lookup(curr_pos)
+    new_pos_piece = self.board.lookup(new_pos)
+    self.board.remove(curr_pos)
+    self.board.forget_piece(curr_pos_piece)
+    curr_pos_piece.remove_pos()
+
+    if new_pos_piece is not None:
+      self.board.remove(new_pos)
+      self.board.forget_piece(new_pos_piece)
+      new_pos_piece.remove_pos()
+
+    self.board.place(new_pos, curr_pos_piece)
+    self.board.add_piece(curr_pos_piece)
+    curr_pos_piece.set_pos(new_pos)
 
   def make_piece(self, fen_char: str, pos: tuple[int, int]) -> Piece:
     mapping = {

@@ -128,3 +128,14 @@ a:active {
 .pawn-w {
   background-image: url("./images/pieces-svg/pawn-w.svg");
 }
+
+.highlighted {
+  border: 2px solid red; /* Adjust the border style as needed */
+}
+
+.legal-move {
+  background-color: rgba(0, 0, 255, 0.5); /* Light blue background */
+  border: 2px solid blue; /* Blue border */
+}
+
+

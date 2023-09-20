@@ -1,4 +1,5 @@
 const board = document.querySelector(".board");
+let selectedPiece = null;
 
 const initialSetup = [
   ["king-b", "knight-b", "bishop-b", "rook-b"],
@@ -31,52 +32,71 @@ for (let i = 0; i < 5; i++) {
   board.appendChild(row);
 }
 
-let selectedCell = null;
-
 async function handleCellClick(event) {
   const row = event.target.dataset.row_count;
   const col = event.target.dataset.col_count;
-  console.log("Event target:", event.target);
-  console.log("Classes:", event.target.classList);
 
-  if (!selectedCell) {
-    selectedCell = { row, col };
+  if (!selectedPiece) {
+    // Handle the click on a piece
+    const pieceResponse = await fetch(`http://localhost:5000/get_legal_moves/${row}/${col}`);
+    if (pieceResponse.ok) {
+      const pieceData = await pieceResponse.json();
+      if (pieceData.legal_moves.length > 0) {
+        // Highlight legal moves
+        pieceData.legal_moves.forEach(move => {
+          const cell = document.querySelector(`[data-row_count='${move[0]}'][data-col_count='${move[1]}']`);
+          cell.classList.add('legal-move');
+        });
+
+        // Store the selected piece for future reference
+        selectedPiece = { row, col };
+      }
+    }
   } else {
-    // Send request to Flask API
-    const response = await fetch("http://localhost:5000/move", {
+    // Handle the click on a legal move
+    const moveResponse = await fetch(`http://localhost:5000/move`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        old_coor: selectedCell,
+        old_coor: selectedPiece,
         new_coor: { row, col },
       }),
     });
 
-    if (response.ok) {
-      // Remove classes from the old cell
-      const oldCell = document.querySelector(
-        `[data-row_count='${selectedCell.row}'][data-col_count='${selectedCell.col}']`
+    if (moveResponse.ok) {
+      // Update the visual appearance of the pieces
+      const oldPieceCell = document.querySelector(
+        `[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`
       );
-      const newCell = document.querySelector(`[data-row_count='${row}'][data-col_count='${col}']`);
+      const newPieceCell = event.target;
 
-      const pieceClass = Array.from(oldCell.classList).find(
+      // Remove the class representing the piece from the old cell
+      const oldPieceClass = Array.from(oldPieceCell.classList).find(
         (cls) => cls.endsWith("-b") || cls.endsWith("-w")
       );
+      oldPieceCell.classList.remove(oldPieceClass);
 
-      if (pieceClass) {
-        // Remove the class representing the piece from the old cell
-        oldCell.classList.remove(pieceClass);
+      // Add the class representing the piece to the new cell
+      const newPieceClass = Array.from(newPieceCell.classList).find(
+        (cls) => cls.endsWith("-b") || cls.endsWith("-w")
+      );
+      newPieceCell.classList.remove(newPieceClass);
+      newPieceCell.classList.add(oldPieceClass);
 
-        // Add the class to the new cell
-        event.target.classList.add(pieceClass);
-      }
-      oldCell.classList.remove("chess-piece");
-      newCell.classList.remove("chess-piece");
-      newCell.classList.add("chess-piece");
+      // Update the data attributes for the new cell
+      newPieceCell.dataset.row_count = selectedPiece.row;
+      newPieceCell.dataset.col_count = selectedPiece.col;
+
+      // Adjust the size of the piece to prevent it from becoming too large
+      newPieceCell.style.backgroundSize = 'contain';
+
+      // Remove glow from legal moves
+      document.querySelectorAll('.legal-move').forEach(cell => cell.classList.remove('legal-move'));
     }
 
-    selectedCell = null;
+    // Reset selectedPiece
+    selectedPiece = null;
   }
 }
