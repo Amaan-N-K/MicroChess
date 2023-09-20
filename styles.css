@@ -197,6 +197,10 @@ a:active {
   transition: all 0.3s;
 }
 
+.in-check {
+  background-color: pink; /* Update with your desired color */
+}
+
 .toggle-checkbox:checked + .toggle-label .toggle-inner {
   left: calc(100% - (28px + 1px));
 }
