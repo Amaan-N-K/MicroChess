@@ -134,25 +134,44 @@ async function handleCellClick(event) {
     }
   }
 }
-
-
-
-
 const modeToggle = document.getElementById("modeToggle");
+const modeText = document.getElementById("modeText");
 
+function updateUIBasedOnToggleState() {
+    if (modeToggle.checked) {
+        modeText.textContent = "Local 1v1 Mode";
+    } else {
+        modeText.textContent = "1 vs Computer Mode";
+    }
+}
+
+// Set the toggle state on page load based on sessionStorage
+const savedToggleState = sessionStorage.getItem('modeToggleState');
+if (savedToggleState !== null) {
+    modeToggle.checked = savedToggleState === 'true';
+    updateUIBasedOnToggleState();
+}
 
 modeToggle.addEventListener('change', function() {
+    // Save the current state of the toggle to sessionStorage
+    sessionStorage.setItem('modeToggleState', modeToggle.checked);
+
     if (modeToggle.checked) {
         console.log("Local 1v1 Mode");
     } else {
         console.log("1 vs Computer Mode");
     }
 
-    // Reset the game on the server when the toggle is clicked
-    fetch('http://localhost:5000/reset_game')
-    .then(response => response.json())
+    // Change the game mode on the server when the toggle is clicked
+    fetch('http://localhost:5000/change_mode') // Updated URL
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
-        if(data.message) {
+        if (data.message) {
             console.log(data.message);
 
             // Refresh the page to reset the frontend board
@@ -163,7 +182,6 @@ modeToggle.addEventListener('change', function() {
         console.error('Error:', error);
     });
 });
-
 
 
 

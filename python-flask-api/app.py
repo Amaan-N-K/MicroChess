@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app, resources={
     r"/get_legal_moves/*": {"origins": "http://localhost:63342"},
     r"/move": {"origins": "http://localhost:63342"},
-    r"/reset_game": {"origins": "http://localhost:63342"}
+    r"/change_mode": {"origins": "http://localhost:63342"}
 })
 
 
@@ -20,12 +20,13 @@ class FrontendAgent(Agent):
 
 g = Game(FrontendAgent, FrontendAgent)
 
-@app.route('/reset_game', methods=['GET'])
-def reset_game():
+@app.route('/change_mode', methods=['GET'])
+def change_mode():
     global g, white_turn
     white_turn = True
     g = Game(FrontendAgent, FrontendAgent)
-    return jsonify({"message": "Game reset successfully"}), 200
+    return jsonify({"message": "Mode changed successfully"}), 200
+
 
 
 @app.route('/move', methods=['POST'])
