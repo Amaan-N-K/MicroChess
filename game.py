@@ -122,10 +122,12 @@ class Game:
           col_idx += 1
 
   def is_game_over(self, color) -> list:
+    self.board.pieces["K"][0].checks_and_pins()
+    self.board.pieces["k"][0].checks_and_pins()
     if color == WHITE:
       all_moves = self.all_moves_by_color(WHITE)
       if len(all_moves) == 0 and len(self.board.pieces["K"][0].get_checks()) >= 1:
-        return [True, 'White Wins']
+        return [True, 'Black Wins']
       elif len(all_moves) == 0:
         return [True, 'Draw']
       else:
@@ -133,7 +135,7 @@ class Game:
     else:
       all_moves = self.all_moves_by_color(BLACK)
       if len(all_moves) == 0 and len(self.board.pieces["k"][0].get_checks()) >= 1:
-        return [True, 'Black Wins']
+        return [True, 'White Wins']
       elif len(all_moves) == 0:
         return [True, 'Draw']
       else:
@@ -144,6 +146,7 @@ class Game:
     for pieces in self.board.pieces:
       if color == BLACK and pieces.islower():
         for piece in self.board.pieces[pieces]:
+          print(piece)
           all_moves.extend(piece.moves())
       elif color == WHITE and pieces.isupper():
         for piece in self.board.pieces[pieces]:

@@ -30,10 +30,15 @@ def move():
     for k in new_coor:
         new_pos.append(int(new_coor[k]))
     g.flask_move(curr_pos, new_pos)
-    white_turn = not white_turn
     print(f"Moving piece from {old_coor} to {new_coor}")
 
-    g.board.print_board()
+    game_state = g.is_game_over(BLACK if white_turn else WHITE)
+    print(game_state)
+    if game_state[0]:
+        winner_message = "Black wins!" if not white_turn else "White wins!"
+        return jsonify({"game_over": True, "message": winner_message, "legal_moves": []}), 200
+
+    white_turn = not white_turn
 
     return jsonify({"message": "Moved successfully"}), 200
 

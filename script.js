@@ -41,9 +41,17 @@ async function handleCellClick(event) {
   if (!selectedPiece) {
     // Handle the click on a piece
     const pieceResponse = await fetch(`http://localhost:5000/get_legal_moves/${row}/${col}`);
+
+    if (pieceResponse.status === 400) {
+      // Inform the player that it's not the correct turn for the chosen piece
+      alert('Wrong turn! Please choose a valid piece.');  // Or any user-friendly message
+      return;
+    }
+
     if (pieceResponse.ok) {
       const pieceData = await pieceResponse.json();
-      if (pieceData.legal_moves.length > 0) {
+
+      if (pieceData.legal_moves && pieceData.legal_moves.length > 0) {
         // Highlight legal moves
         pieceData.legal_moves.forEach(move => {
           const cell = document.querySelector(`[data-row_count='${move[0]}'][data-col_count='${move[1]}']`);
@@ -82,6 +90,15 @@ async function handleCellClick(event) {
     });
 
     if (moveResponse.ok) {
+      const moveData = await moveResponse.json();
+
+      // Handle game over situation
+      if (moveData.game_over) {
+        alert(moveData.message);
+        location.reload();  // Refresh the page
+        return;
+      }
+
       // Update the visual appearance of the pieces
       const oldPieceCell = document.querySelector(
         `[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`

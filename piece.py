@@ -6,7 +6,7 @@ WHITE, BLACK = 0, 1
 class Piece:
   def __init__(self, color: int, pos: tuple[int, int], board: Board) -> None:
     self.color = color
-    self.pos = pos
+    self.pos = tuple(pos)
     self.board = board
     self.offsets = None
 
@@ -48,7 +48,6 @@ class Piece:
         if board.is_valid_pos(new_pos) and \
                 (board.is_empty_pos(new_pos) or board.lookup(new_pos).get_color() != self.get_color()):
           moves.append(new_pos)
-
     return moves
 
   def moves(self) -> list[tuple[int, int]]:
@@ -150,7 +149,6 @@ class King(Piece):
 
     # Checking for check by pawn
     vertical_direction = -1 if self.get_color() == WHITE else 1
-    print(vertical_direction)
     # Capture moves (diagonal)
     diagonal_moves = [
         (curr_pos[0] + vertical_direction, curr_pos[1] - 1),
@@ -158,7 +156,6 @@ class King(Piece):
     ]
 
     for move in diagonal_moves:
-      # print(move)
       if self.board.is_valid_pos(move):
         piece_at_cell = self.board.lookup(move)
         if piece_at_cell is not None:
@@ -318,6 +315,7 @@ class Knight(Piece):
         return []
 
       king_pos = my_king.get_pos()
+
       check_pos = checks[0].get_pos()
       check_blocks = check_line(king_pos, check_pos)
       moves = []
@@ -581,12 +579,14 @@ def check_line(king_pos: tuple[int, int], checker_pos: tuple[int, int]) -> list[
   if vector[1] != 0:
     vector = (vector[0], vector[1] // abs(vector[1]))
 
+  checker_pos = tuple(checker_pos)
   pin_line = []
 
   curr_pos = king_pos
 
   while curr_pos != checker_pos:
-    curr_pos = (int(curr_pos[0] + vector[0]), int(curr_pos[1] + vector[1]))
+    print('here')
+    curr_pos = ((curr_pos[0] + vector[0]), (curr_pos[1] + vector[1]))
     pin_line.append(curr_pos)
 
   return pin_line
@@ -601,7 +601,7 @@ def pin_line(pin_pos: tuple[int, int], pinner_pos: tuple[int, int]) -> list[tupl
     vector = (vector[0], vector[1] / abs(vector[1]))
 
   pin_line = []
-
+  pinner_pos = tuple(pinner_pos)
   curr_pos = pin_pos
 
   while curr_pos != pinner_pos:
