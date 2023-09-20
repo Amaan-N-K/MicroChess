@@ -123,16 +123,7 @@ async function handleCellClick(event) {
       }
 
       // Handle game_over logic
-      if (moveData.game_over) {
-        const kingCell = document.querySelector(`[data-row_count='${moveData.king_position[0]}'][data-col_count='${moveData.king_position[1]}']`);
-        kingCell.style.backgroundColor = 'red';
 
-        setTimeout(() => {
-          alert(moveData.message);
-          location.reload();
-        }, 50);
-        return;
-      }
 
       // Update the visual appearance of the pieces
       const oldPieceCell = document.querySelector(`[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`);
@@ -148,6 +139,17 @@ async function handleCellClick(event) {
 
       newPieceCell.classList.add(oldPieceClass);
       newPieceCell.style.backgroundSize = 'contain';
+
+      if (moveData.game_over) {
+        const kingCell = document.querySelector(`[data-row_count='${moveData.king_position[0]}'][data-col_count='${moveData.king_position[1]}']`);
+        kingCell.style.backgroundColor = 'red';
+
+        setTimeout(() => {
+          alert(moveData.message);
+          location.reload();
+        }, 50);
+        return;
+      }
 
       selectedPiece = null;
       legalMoves = [];
