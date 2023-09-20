@@ -144,6 +144,33 @@ async function handleCellClick(event) {
     }
 }
 
+const modeToggle = document.getElementById("modeToggle");
+
+
+modeToggle.addEventListener('change', function() {
+    if (modeToggle.checked) {
+        console.log("Local 1v1 Mode");
+    } else {
+        console.log("1 vs Computer Mode");
+    }
+
+    // Reset the game on the server when the toggle is clicked
+    fetch('http://localhost:5000/reset_game')
+    .then(response => response.json())
+    .then(data => {
+        if(data.message) {
+            console.log(data.message);
+
+            // Refresh the page to reset the frontend board
+            window.location.reload();
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
+
+
 
 
 

@@ -138,4 +138,64 @@ a:active {
   border: 2px solid blue; /* Blue border */
 }
 
+.mode-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  flex-direction: column;
+}
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-label {
+  display: block;
+  width: 60px;
+  height: 30px;
+  background-color: var(--black);
+  border-radius: 15px;
+  position: relative;
+  cursor: pointer;
+}
+
+.toggle-inner {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 28px;
+  background-color: var(--white);
+  border-radius: 14px;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  transition: all 0.3s;
+}
+
+.toggle-switch {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 28px;
+  background-color: var(--white);
+  border-radius: 14px;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  transition: all 0.3s;
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-inner {
+  left: calc(100% - (28px + 1px));
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-switch {
+  right: calc(100% - (28px + 1px));
+}
+
+#modeText {
+  margin-top: 10px;
+}
+
 

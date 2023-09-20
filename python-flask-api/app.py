@@ -6,8 +6,11 @@ from game import Game
 WHITE, BLACK = 0, 1
 white_turn = True
 app = Flask(__name__)
-CORS(app, resources={r"/get_legal_moves/*": {"origins": "http://localhost:63342"},
-                     r"/move": {"origins": "http://localhost:63342"}})
+CORS(app, resources={
+    r"/get_legal_moves/*": {"origins": "http://localhost:63342"},
+    r"/move": {"origins": "http://localhost:63342"},
+    r"/reset_game": {"origins": "http://localhost:63342"}
+})
 
 
 class FrontendAgent(Agent):
@@ -16,6 +19,14 @@ class FrontendAgent(Agent):
 
 
 g = Game(FrontendAgent, FrontendAgent)
+
+@app.route('/reset_game', methods=['GET'])
+def reset_game():
+    global g, white_turn
+    white_turn = True
+    g = Game(FrontendAgent, FrontendAgent)
+    return jsonify({"message": "Game reset successfully"}), 200
+
 
 @app.route('/move', methods=['POST'])
 def move():
