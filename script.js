@@ -32,9 +32,11 @@ for (let i = 0; i < 5; i++) {
   board.appendChild(row);
 }
 
+let legalMoves = [];  // New global variable to store legal moves
+
 async function handleCellClick(event) {
-  const row = event.target.dataset.row_count;
-  const col = event.target.dataset.col_count;
+  const row = parseInt(event.target.dataset.row_count, 10);
+  const col = parseInt(event.target.dataset.col_count, 10);
 
   if (!selectedPiece) {
     // Handle the click on a piece
@@ -48,11 +50,25 @@ async function handleCellClick(event) {
           cell.classList.add('legal-move');
         });
 
+        // Store the legal moves
+        legalMoves = pieceData.legal_moves;
+
         // Store the selected piece for future reference
         selectedPiece = { row, col };
       }
     }
   } else {
+    // Check if the move is legal
+    const isLegalMove = legalMoves.some(move => move[0] === row && move[1] === col);
+
+    if (!isLegalMove) {
+      // If not a legal move, remove highlight from legal moves and reset
+      document.querySelectorAll('.legal-move').forEach(cell => cell.classList.remove('legal-move'));
+      selectedPiece = null;
+      legalMoves = [];
+      return;  // Exit the function early
+    }
+
     // Handle the click on a legal move
     const moveResponse = await fetch(`http://localhost:5000/move`, {
       method: "POST",
@@ -92,12 +108,14 @@ async function handleCellClick(event) {
       // Adjust the size of the piece to prevent it from becoming too large
       newPieceCell.style.backgroundSize = 'contain';
 
-      // Remove glow from legal moves
+      // Remove highlight from legal moves
       document.querySelectorAll('.legal-move').forEach(cell => cell.classList.remove('legal-move'));
-    }
 
-    // Reset selectedPiece
-    selectedPiece = null;
+      // Reset selectedPiece and legalMoves for the next turn
+      selectedPiece = null;
+      legalMoves = [];
+    }
   }
 }
+
 
