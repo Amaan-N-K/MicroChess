@@ -46,7 +46,6 @@ async function handleCellClick(event) {
         const pieceResponse = await fetch(`http://localhost:5000/get_legal_moves/${row}/${col}`);
 
         if (pieceResponse.status === 400) {
-            // Inform the player that it's not the correct turn for the chosen piece
             alert('Wrong turn! Please choose a valid piece.');
             return;
         }
@@ -55,7 +54,6 @@ async function handleCellClick(event) {
             const pieceData = await pieceResponse.json();
 
             if (pieceData.legal_moves && pieceData.legal_moves.length > 0) {
-                // Add legal move indicators
                 pieceData.legal_moves.forEach(move => {
                     const cell = document.querySelector(`[data-row_count='${move[0]}'][data-col_count='${move[1]}']`);
                     const circle = document.createElement('div');
@@ -63,25 +61,18 @@ async function handleCellClick(event) {
                     cell.appendChild(circle);
                 });
 
-                // Store the legal moves
                 legalMoves = pieceData.legal_moves;
-
-                // Store the selected piece for future reference
                 selectedPiece = { row, col };
             }
         }
     } else {
-        // Check if the move is legal
         const isLegalMove = legalMoves.some(move => move[0] === row && move[1] === col);
-
         if (!isLegalMove) {
-            // Reset selectedPiece and legalMoves for the next turn if not a legal move
             selectedPiece = null;
             legalMoves = [];
             return;
         }
 
-        // Handle the click on a legal move
         const moveResponse = await fetch(`http://localhost:5000/move`, {
             method: "POST",
             headers: {
@@ -96,33 +87,23 @@ async function handleCellClick(event) {
         if (moveResponse.ok) {
             const moveData = await moveResponse.json();
 
-            // Clear previous pink color for checks
-            document.querySelectorAll('.in-check').forEach(cell => {
-                cell.style.backgroundColor = '';
-                cell.classList.remove('in-check');
-            });
-
-            // Handle in check scenario
-            if (moveData.in_check) {
+            if (moveData.game_over) {
                 const kingCell = document.querySelector(`[data-row_count='${moveData.king_position[0]}'][data-col_count='${moveData.king_position[1]}']`);
-                kingCell.style.backgroundColor = 'pink';
-                kingCell.classList.add('in-check');
+                kingCell.style.backgroundColor = 'red';
+
+                setTimeout(() => {
+                    alert(moveData.message);
+                }, 50);
+                return;
             }
 
-            // Update the visual appearance of the pieces
-            const oldPieceCell = document.querySelector(
-                `[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`
-            );
+            const oldPieceCell = document.querySelector(`[data-row_count='${selectedPiece.row}'][data-col_count='${selectedPiece.col}']`);
             const newPieceCell = event.target;
 
-            const oldPieceClass = Array.from(oldPieceCell.classList).find(
-                (cls) => cls.endsWith("-b") || cls.endsWith("-w")
-            );
+            const oldPieceClass = Array.from(oldPieceCell.classList).find((cls) => cls.endsWith("-b") || cls.endsWith("-w"));
             oldPieceCell.classList.remove(oldPieceClass);
 
-            const existingPieceClass = Array.from(newPieceCell.classList).find(
-                (cls) => cls.endsWith("-b") || cls.endsWith("-w")
-            );
+            const existingPieceClass = Array.from(newPieceCell.classList).find((cls) => cls.endsWith("-b") || cls.endsWith("-w"));
             if (existingPieceClass) {
                 newPieceCell.classList.remove(existingPieceClass);
             }
@@ -130,12 +111,13 @@ async function handleCellClick(event) {
             newPieceCell.classList.add(oldPieceClass);
             newPieceCell.style.backgroundSize = 'contain';
 
-            // Reset selectedPiece and legalMoves for the next turn
             selectedPiece = null;
             legalMoves = [];
         }
     }
 }
+
+
 
 const modeToggle = document.getElementById("modeToggle");
 
