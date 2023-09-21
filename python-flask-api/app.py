@@ -85,9 +85,9 @@ def move():
         game_state = g.is_game_over(WHITE, move_count)
         print(game_state)
 
-        # Check if AI's king is in check after the move
+        # Check if Players king is in check after move
         white_king_pos = g.board.pieces["K"][0].get_pos()
-
+        white_king_checks = g.board.pieces["K"][0].checks
         # Convert tuples to dictionaries for JSON serialization
         curr_pos_dict = {"row": curr_pos[0], "col": curr_pos[1]}
         new_pos_dict = {"row": new_pos[0], "col": new_pos[1]}
@@ -103,7 +103,9 @@ def move():
             "ai_king_position": ai_king_pos,  # Add the AI king's position here
             "ai_game_over": game_state[0],
             "result_message": game_state[1],
-            "white_king_position": white_king_pos
+            "white_king_position": white_king_pos,
+            "white_king_checks": len(white_king_checks) > 0
+
         }), 200
 
     white_turn = not white_turn

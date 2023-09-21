@@ -106,6 +106,13 @@ async function handleCellClick(event) {
 
     if (moveResponse.ok) {
       const moveData = await moveResponse.json();
+      const whiteKingChecked = document.querySelector('.in-check');
+      // if AI checked player
+        if (whiteKingChecked){
+        const isWhiteSquare = (parseInt(whiteKingChecked.dataset.row_count, 10) + parseInt(whiteKingChecked.dataset.col_count, 10)) % 2 === 0;
+        whiteKingChecked.style.backgroundColor = isWhiteSquare ? 'var(--white-cell)' : 'var(--black-cell)';
+        whiteKingChecked.classList.remove('in-check');
+        }
 
       // Handle in_check logic
       if (moveData.in_check) {
@@ -197,6 +204,11 @@ async function handleCellClick(event) {
           location.reload();
         }, 50);
         return;
+        }
+        if (moveData.white_king_checks) {
+          const whiteKingCell = document.querySelector(`[data-row_count='${moveData.white_king_position[0]}'][data-col_count='${moveData.white_king_position[1]}']`);
+          whiteKingCell.style.backgroundColor = 'pink';
+          whiteKingCell.classList.add('in-check');
         }
       }
     }
