@@ -85,7 +85,7 @@ def move():
         game_state = g.is_game_over(WHITE, move_count)
         print(game_state)
 
-        # Check if Players king is in check after move
+        # Check if Players king is in check after AI move
         white_king_pos = g.board.pieces["K"][0].get_pos()
         white_king_checks = g.board.pieces["K"][0].checks
         # Convert tuples to dictionaries for JSON serialization
