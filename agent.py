@@ -147,7 +147,7 @@ class MinimaxAgent(Agent):
     else:
       min_eval = float('inf')
       best_move = (None, None)
-      prune_flag = False  # Pruning flag
+      prune_flag = False
       for piece in black_moves:
         if prune_flag:
           break
