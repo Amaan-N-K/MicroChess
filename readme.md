@@ -7,10 +7,9 @@ This is our game engine for the popular microchess game, a simplified version of
 - Python 3.x
 - Flask
 
-# How to Run
-You will need python 3.x and an up to date version of Flask. 
-Dependencies are in the `requirements.txt` file which can be downloaded by running
+## How to Run
+You will need to clone the repo and need python 3.x and an up to date version of Flask. 
+Dependencies are in the `requirements.txt` file which can be downloaded by running:
 `pip3 install -r requirements.txt`
-Run the following command to start up the app in dev mode
+Run the following command to start up the app in dev mode and type
 `python app.py`
-
