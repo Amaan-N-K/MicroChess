@@ -97,7 +97,7 @@ class MinimaxAgent(Agent):
     self.board.add_piece(curr_pos_piece)
     curr_pos_piece.set_pos(curr_pos)
 
-  def minimax(self, move_func, depth: int, is_white: bool) -> tuple:
+  def minimax(self, move_func, depth: int, is_white: bool, alpha=float('-inf'), beta=float('inf')) -> tuple:
 
     white_king = self.board.get_piece("K")[0]
     black_king = self.board.get_piece("k")[0]
@@ -115,46 +115,59 @@ class MinimaxAgent(Agent):
     if black_moves_len == 0 and len(black_king.get_checks()) > 0:
       return (100000000 * depth + 100000000, (None, None))
 
-
     # Draw
-    if is_white and len(white_moves) == 0:
+    if is_white and white_moves_len == 0:
       return (0, (None, None))
-    if not is_white and len(black_moves) == 0:
+    if not is_white and black_moves_len == 0:
       return (0, (None, None))
 
     if depth == 0:
       return (self.eval_func(self.board), (None, None))
 
     if is_white:
-      evals = []
+      max_eval = float('-inf')
+      best_move = (None, None)
+      prune_flag = False  # Pruning flag
       for piece in white_moves:
+        if prune_flag:
+          break
         for move in white_moves[piece]:
           data = self.apply_move(piece, move)
-          evaluation = self.minimax(all_moves_by_color_dict, depth - 1, False)
+          evaluation = self.minimax(move_func, depth - 1, False, alpha, beta)
           self.undo_move(data)
-          evals.append((evaluation[0], (piece.get_pos(), move)))
-      white_king.checks_and_pins()
-      black_king.checks_and_pins()
-      if evals == []:
-        return (0, (None, None))
-      return max(evals, key=lambda x: x[0])
+          if evaluation[0] > max_eval:
+            max_eval = evaluation[0]
+            best_move = (piece.get_pos(), move)
+          alpha = max(alpha, evaluation[0])
+          if beta <= alpha:
+            prune_flag = True
+            break
+      return (max_eval, best_move[0], best_move[1])
+
     else:
-      evals = []
+      min_eval = float('inf')
+      best_move = (None, None)
+      prune_flag = False  # Pruning flag
       for piece in black_moves:
+        if prune_flag:
+          break
         for move in black_moves[piece]:
           data = self.apply_move(piece, move)
-          eval_val = self.minimax(all_moves_by_color_dict, depth - 1, True)
+          eval_val = self.minimax(move_func, depth - 1, True, alpha, beta)
           self.undo_move(data)
-          evals.append((eval_val[0], (piece.get_pos(), move), str(piece)))
-      white_king.checks_and_pins()
-      black_king.checks_and_pins()
-      if evals == []:
-        return (0, (None, None))
-      return min(evals, key=lambda x: x[0])
+          if eval_val[0] < min_eval:
+            min_eval = eval_val[0]
+            best_move = (piece.get_pos(), move)
+          beta = min(beta, eval_val[0])
+          if beta <= alpha:
+            prune_flag = True
+            break
+      return (min_eval, best_move[0], best_move[1])
 
   def get_move(self):
-    move = self.minimax(all_moves_by_color_dict, 3, self.color == 0)
-    return (1, move[1][0], move[1][1])
+    move = self.minimax(all_moves_by_color_dict, 3, self.color == 0, alpha=float('-inf'), beta=float('inf'))
+    return (1, move[1], move[2])
+
 
 def all_moves_by_color_dict(board: Board, color: int) -> dict:
     white_king = board.get_piece("K")[0]

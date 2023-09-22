@@ -4,6 +4,9 @@ from agent import Agent, MinimaxAgent
 from board import Board
 from game import Game
 from evaluate import basic_eval
+import webbrowser
+import os
+
 WHITE, BLACK = 0, 1
 white_turn = True
 app = Flask(__name__)
@@ -128,4 +131,7 @@ def get_legal_moves(row, col):
 
 
 if __name__ == "__main__":
-  app.run(debug=True)
+    if not os.environ.get("WERKZEUG_RUN_MAIN"):
+        webbrowser.open("http://localhost:63342/microchess/index.html?_ijt=fghdqc2vtrv6cbs8pq59kdbibm&_ij_reload=RELOAD_ON_SAVE", new=2)
+    app.run(debug=True)
+
