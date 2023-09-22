@@ -247,6 +247,7 @@ class King(Piece):
     opponent_color = BLACK if self.get_color() == WHITE else WHITE
     for offset in self.offsets:
       possible_pos = (curr_pos[0] + offset[0], curr_pos[1] + offset[1])
+
       if not self.board.is_valid_pos(possible_pos):
         continue
       elif self.board.lookup(possible_pos) is None or self.board.lookup(possible_pos).get_color() == opponent_color:

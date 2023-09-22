@@ -57,14 +57,18 @@ def basic_eval(board: Board) -> int:
       if black_piece_val >= 52 and len(moves) == 0:
         white_val += 5
       elif black_piece_val <= 51:
-        white_val += int(4 * 1/len(moves))
+        if len(moves) > 0:
+          white_val += int(4 * 1/len(moves))
+
   if 'K' in board.pieces:
     for king in board.pieces['K']:
       moves = king.moves()
       if white_piece_val >= 52 and len(moves) == 0:
         black_val += 5
       elif black_piece_val <= 51:
-        black_val += int(4 * 1/len(moves))
+        if len(moves) > 0:
+          black_val += int(4 * 1/len(moves))
+
 
 
 

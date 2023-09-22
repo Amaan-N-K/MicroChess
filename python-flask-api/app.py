@@ -74,14 +74,12 @@ def move():
 
     if not is_1v1:
         move_count += 1
-        g.board.print_board()
         ai_king_pos = g.board.pieces["k"][0].get_pos()  # Get AI's king position
         ai_checks = g.board.pieces["k"][0].checks
         moves = minimax.get_move()
         curr_pos = moves[1]
         new_pos = moves[2]
         g.flask_move(curr_pos, new_pos)
-        g.board.print_board()
         game_state = g.is_game_over(WHITE, move_count)
         print(game_state)
 
