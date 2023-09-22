@@ -1,7 +1,7 @@
 # MicroChess by [Ajlal](https://github.com/AJP-432) and [Amaan](https://github.com/Amaan-N-K)
 
 # Description
-This is our game engine for the popular microchess game, a simplified version of chess. This project is written using Flask, offering a backend API to interact with the game and its rules. Coupled with an HTML interface, users can enjoy a seamless gaming experience on their browsers.
+This is our game engine for the popular microchess game, a simplified version of chess. It is played on a 5 by 4 board and has no castling, pawn promotions and pawns can only move up one square. This project is written using Flask, offering a backend API to interact with the game and its rules. Coupled with an HTML interface, users can enjoy a seamless gaming experience on their browsers.
 
 # Prerequisites
 - Python 3.x
