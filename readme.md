@@ -13,3 +13,5 @@ Dependencies are in the `requirements.txt` file which can be downloaded by runni
 `pip3 install -r requirements.txt`
 Run the following command to start up the app in dev mode and type
 `python app.py`
+
+ ![image](https://github.com/Amaan-N-K/microchess/assets/58121633/366dc235-7016-463b-ab49-0c8b1e4a6284)
