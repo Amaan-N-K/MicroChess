@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from agent import Agent, MinimaxAgent
-from board import Board
-from game import Game
-from evaluate import basic_eval
+from backend.agent import Agent, MinimaxAgent
+from backend.board import Board
+from backend.game import Game
+from backend.evaluate import basic_eval
 import webbrowser
 import os
 
