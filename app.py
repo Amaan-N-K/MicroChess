@@ -1,11 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from backend.agent import Agent, MinimaxAgent
 from backend.board import Board
 from backend.game import Game
 from backend.evaluate import basic_eval
-import webbrowser
-import os
 
 WHITE, BLACK = 0, 1
 white_turn = True
@@ -14,20 +12,18 @@ is_1v1 = True
 minimax = False
 move_count = 0
 
-CORS(app, resources={
-    r"/get_legal_moves/*": {"origins": "http://localhost:63342"},
-    r"/move": {"origins": "http://localhost:63342"},
-    r"/change_mode": {"origins": "http://localhost:63342"},
-    r"/reset_game": {"origins": "http://localhost:63342"}
-})
+CORS(app)
 
 
 class FrontendAgent(Agent):
   def __init__(self, color: int, board: Board) -> None:
     super().__init__(color, board)
 
-
 g = Game(FrontendAgent, FrontendAgent)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/reset_game', methods=['POST'])
 def reset_game():
@@ -130,8 +126,6 @@ def get_legal_moves(row, col):
     return jsonify({"legal_moves": legal_moves}), 200
 
 
-if __name__ == "__main__":
-    if not os.environ.get("WERKZEUG_RUN_MAIN"):
-        webbrowser.open("http://localhost:63342/microchess/index.html?_ijt=fghdqc2vtrv6cbs8pq59kdbibm&_ij_reload=RELOAD_ON_SAVE", new=2)
+if __name__ == '__main__':
     app.run(debug=True)
 
